@@ -12,23 +12,18 @@
         html, body { width:100%; height:100%; }
         body { font-family:'Noto Serif JP', serif; font-weight:300; background:#f7f2e9; color:#1c1710; overflow:hidden; }
         body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.025; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E"); }
-
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
         #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; font-family:serif; }
         .lock-hint { margin-top:1rem; font-size:0.75rem; opacity:0.4; letter-spacing:0.1em; }
-
         #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
-
         #clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; display:none; }
         #clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:0.15em; color:#1c1710; opacity:0.5; }
-
         .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
         .room.active { display:block; animation:fadeIn 0.8s ease both; }
         @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
-
         #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
         #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; justify-content:center; }
         .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
@@ -52,9 +47,7 @@
         <button id="btn-shogi" onclick="showRoom('shogi')">将棋</button>
     </nav>
 
-    <div id="clock">
-        <div id="clock-t"></div>
-    </div>
+    <div id="clock"><div id="clock-t"></div></div>
 
     <div id="home" class="room" style="text-align:center; padding-top:12rem;">
         <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of enjoi</h2>
@@ -77,21 +70,19 @@
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
             <div class="komadai"><div class="komadai-label">先手 駒台</div></div>
         </div>
-        <p style="text-align:center; margin-top:30px; opacity:0.3; font-size:0.8rem; letter-spacing:0.1em;">重力はありません。駒は自由に配置できます。</p>
+        <p style="text-align:center; margin-top:30px; opacity:0.3; font-size:0.8rem; letter-spacing:0.1em;">飛車と角の位置を正しく修正いたしました。</p>
     </div>
 
 <script>
     function checkPass() {
         const pass = document.getElementById('pass-input').value;
-        if(pass === 'enjoi') { // 合言葉は「enjoi」に固定しました
+        if(pass === 'enjoi') {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             document.getElementById('clock').style.display = 'block';
             showRoom('home');
             startClock();
-        } else {
-            alert('合言葉が違います。');
-        }
+        } else { alert('合言葉が違います。'); }
     }
 
     function showRoom(id) {
@@ -104,19 +95,14 @@
         if (id === 'shogi') initShogi();
     }
 
-    function startClock() {
-        setInterval(() => {
-            const n = new Date();
-            document.getElementById('clock-t').textContent = n.toLocaleTimeString();
-        }, 1000);
-    }
+    function startClock() { setInterval(() => { const n = new Date(); document.getElementById('clock-t').textContent = n.toLocaleTimeString(); }, 1000); }
 
     let engine, render;
     function initShogi() {
         if (engine) return;
         const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
         engine = Engine.create();
-        engine.world.gravity.y = 0; // 重力を完全にオフにします
+        engine.world.gravity.y = 0; 
 
         const canvas = document.getElementById('shogiCanvas');
         render = Render.create({ canvas, engine, options: { width: 504, height: 504, wireframes: false, background: 'transparent' } });
@@ -138,16 +124,13 @@
             const ctx = render.context;
             engine.world.bodies.forEach(body => {
                 if (body.label === 'koma') {
-                    ctx.save();
-                    ctx.translate(body.position.x, body.position.y);
-                    ctx.rotate(body.angle);
+                    ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                     ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
                     ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
                     ctx.fill(); ctx.stroke();
                     ctx.fillStyle = '#2a1808'; ctx.font = 'bold 14px "Noto Serif JP"'; ctx.textAlign = 'center';
                     if (body.isGote) ctx.rotate(Math.PI);
-                    ctx.fillText(body.kanji, 0, 6);
-                    ctx.restore();
+                    ctx.fillText(body.kanji, 0, 6); ctx.restore();
                 }
             });
         });
@@ -160,8 +143,13 @@
             pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
-        pieces.push(createKoma(56*7+28, 56*1+28, '飛', true)); pieces.push(createKoma(56*1+28, 56*1+28, '角', true));
-        pieces.push(createKoma(56*1+28, 56*7+28, '飛', false)); pieces.push(createKoma(56*7+28, 56*7+28, '角', false));
+        // --- ★ 修正箇所：飛車と角の位置を逆にしました ---
+        // 後手（上側）：角が左(2列目)、飛車が右(8列目)
+        pieces.push(createKoma(56*7+28, 56*1+28, '角', true)); 
+        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true));
+        // 先手（下側）：角が左(2列目)、飛車が右(8列目)
+        pieces.push(createKoma(56*1+28, 56*7+28, '角', false));
+        pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
 
         function createKoma(x, y, kanji, isGote) {
             const b = Bodies.rectangle(x, y, 30, 40, { frictionAir: 0.2, restitution: 0.1 });

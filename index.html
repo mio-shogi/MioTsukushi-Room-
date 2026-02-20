@@ -1,192 +1,205 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mio Tsukushi Room</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@300;400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
-<style>
-/* ── RESET & BASE ── */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html, body { width:100%; height:100%; }
-body { font-family:'Noto Serif JP', serif; font-weight:300; background:#f7f2e9; color:#1c1710; overflow:hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mio Tsukushi Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@300;400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        /* ── RESET & BASE ── */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html, body { width:100%; height:100%; }
+        body { font-family:'Noto Serif JP', serif; font-weight:300; background:#f7f2e9; color:#1c1710; overflow:hidden; }
 
-/* ── GRAIN ── */
-body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.025; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        /* ── GRAIN ── */
+        body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.025; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-/* ── COVER ── */
-#cover { position:fixed; inset:0; z-index:3000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#f7f2e9; transition:opacity 1.2s ease; }
-#cover.fade-out { opacity:0; pointer-events:none; }
-.cover-h1 { font-family:'Cormorant Garamond', serif; font-weight:300; font-size:clamp(2.8rem,7vw,5.6rem); letter-spacing:.08em; text-align:center; color:#1c1710; }
-.cover-enter { margin-top:4rem; background:none; border:1px solid rgba(28,23,16,.28); padding:1rem 3.5rem; cursor:pointer; font-family:'Cormorant Garamond', serif; font-size:.85rem; letter-spacing:.4em; text-transform:uppercase; color:#1c1710; }
+        /* ── LOCK SCREEN ── */
+        #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
+        #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; font-family:serif; }
+        .lock-hint { margin-top:1rem; font-size:0.75rem; opacity:0.4; letter-spacing:0.1em; }
 
-/* ── NAV ── */
-#nav { position:fixed; top:0; left:0; right:0; z-index:500; display:flex; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
-#nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
-#nav button.active { opacity:1; color:#b89530; }
+        /* ── NAV ── */
+        #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
+        #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
+        #nav button.active { opacity:1; color:#b89530; }
 
-/* ── CLOCK ── */
-#clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; }
-#clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:.18em; color:#1c1710; opacity:.6; }
+        /* ── CLOCK ── */
+        #clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; display:none; }
+        #clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:0.15em; color:#1c1710; opacity:0.5; }
 
-/* ── ROOMS ── */
-.room { display:none; position:fixed; inset:0; overflow-y:auto; padding:5.5rem 2rem 3rem; }
-.room.active { display:block; animation:fadeIn .65s ease both; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
+        /* ── ROOMS ── */
+        .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
+        .room.active { display:block; animation:fadeIn 0.8s ease both; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
 
-/* ── SHOGI ROOM ── */
-#shogi { background:#f7f2e9; display:flex; flex-direction:column; align-items:center; }
-#shogi-layout { display:flex; align-items:center; gap:30px; margin-top: 20px; }
-.komadai { width:100px; min-height:160px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); padding: 10px; display: flex; flex-direction: column; align-items: center; }
-.komadai-label { font-size: 0.7rem; margin-bottom: 10px; border-bottom: 1px solid #5d4037; width: 100%; text-align: center; }
-#board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:3px solid #5d4037; box-shadow:0 8px 28px rgba(0,0,0,0.2); }
-#shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
-</style>
+        /* ── SHOGI ── */
+        #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
+        #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; justify-content:center; }
+        .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
+        .komadai-label { font-size: 0.7rem; margin-bottom: 10px; border-bottom: 1px solid #5d4037; width: 100%; text-align: center; opacity:0.7; }
+        #board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); }
+        #shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+    </style>
 </head>
 <body>
 
-<div id="cover">
-    <h1 class="cover-h1">Mio Tsukushi<br>Room</h1>
-    <button class="cover-enter" onclick="enterRoom()">扉を開く</button>
-</div>
-
-<nav id="nav" style="display:none;">
-    <button class="active" onclick="showRoom('home')">Home</button>
-    <button onclick="showRoom('medical')">Medical</button>
-    <button onclick="showRoom('private')">Private</button>
-    <button onclick="showRoom('shogi')">将棋</button>
-</nav>
-
-<div id="clock" style="display:none;">
-    <div id="clock-t"></div>
-</div>
-
-<div id="home" class="room active" style="display:none; text-align:center; padding-top:15rem;">
-    <h2 style="font-family:'Cormorant Garamond',serif; font-size:3rem;">Welcome to the Sanctuary</h2>
-    <p style="margin-top:2rem; opacity:0.5;">静寂と、知性と、一局の盤を。</p>
-</div>
-
-<div id="medical" class="room">
-    <h2 style="text-align:center;">Medical Room</h2>
-    <p style="text-align:center; margin-top:2rem;">救急・心臓血管外科の研鑽録。命の最前線での思索。</p>
-</div>
-
-<div id="private" class="room">
-    <h2 style="text-align:center;">Private Room</h2>
-    <p style="text-align:center; margin-top:2rem;">文学と思想、日々を綴る書斎。</p>
-</div>
-
-<div id="shogi" class="room">
-    <div id="shogi-layout">
-        <div class="komadai">
-            <div class="komadai-label">後手 駒台</div>
-        </div>
-        <div id="board-wrap">
-            <canvas id="shogiCanvas"></canvas>
-        </div>
-        <div class="komadai">
-            <div class="komadai-label">先手 駒台</div>
-        </div>
+    <div id="lock-screen">
+        <h1 class="lock-h1">Mio Tsukushi Room</h1>
+        <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') checkPass()">
+        <p class="lock-hint">Enter the sanctuary with your secret key.</p>
     </div>
-    <p style="margin-top:20px; opacity:0.4; font-size:0.8rem;">駒をドラッグして動かせます</p>
-</div>
+
+    <nav id="nav">
+        <button id="btn-home" onclick="showRoom('home')">Home</button>
+        <button id="btn-medical" onclick="showRoom('medical')">Medical</button>
+        <button id="btn-private" onclick="showRoom('private')">Private</button>
+        <button id="btn-shogi" onclick="showRoom('shogi')">将棋</button>
+    </nav>
+
+    <div id="clock">
+        <div id="clock-t"></div>
+    </div>
+
+    <div id="home" class="room" style="text-align:center; padding-top:12rem;">
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of i-joi</h2>
+        <p style="margin-top:2rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
+    </div>
+
+    <div id="medical" class="room">
+        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2>
+        <p style="text-align:center; margin-top:3rem; opacity:0.6; line-height:2;">救急・心臓血管外科。命の鼓動と向き合う研鑽の場。</p>
+    </div>
+
+    <div id="private" class="room">
+        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2>
+        <p style="text-align:center; margin-top:3rem; opacity:0.6; line-height:2;">文学、思想、そして一人の人間としての思索。</p>
+    </div>
+
+    <div id="shogi" class="room">
+        <div id="shogi-layout">
+            <div class="komadai"><div class="komadai-label">後手 駒台</div></div>
+            <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
+            <div class="komadai"><div class="komadai-label">先手 駒台</div></div>
+        </div>
+        <p style="text-align:center; margin-top:30px; opacity:0.3; font-size:0.8rem; letter-spacing:0.1em;">駒をドラッグして動かすことができます</p>
+    </div>
 
 <script>
-function enterRoom() {
-    document.getElementById('cover').classList.add('fade-out');
-    setTimeout(() => {
-        document.getElementById('cover').remove();
-        document.getElementById('nav').style.display = 'flex';
-        document.getElementById('clock').style.display = 'block';
-        document.getElementById('home').style.display = 'block';
-        startClock();
-    }, 1200);
-}
-
-function showRoom(id) {
-    document.querySelectorAll('.room').forEach(r => { r.style.display = 'none'; r.classList.remove('active'); });
-    document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
-    const room = document.getElementById(id);
-    room.style.display = 'block';
-    room.classList.add('active');
-    if (id === 'shogi') initShogi();
-}
-
-function startClock() {
-    setInterval(() => {
-        const n = new Date();
-        document.getElementById('clock-t').textContent = n.toLocaleTimeString();
-    }, 1000);
-}
-
-function initShogi() {
-    const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events, Body } = Matter;
-    const engine = Engine.create();
-    const canvas = document.getElementById('shogiCanvas');
-    const render = Render.create({ canvas, engine, options: { width: 504, height: 504, wireframes: false, background: 'transparent' } });
-
-    // 盤の線を描画
-    Events.on(render, 'beforeRender', () => {
-        const ctx = render.context;
-        ctx.fillStyle = '#d4a95a'; ctx.fillRect(0, 0, 504, 504);
-        ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
-        for (let i = 0; i <= 9; i++) {
-            ctx.beginPath(); ctx.moveTo(i * 56, 0); ctx.lineTo(i * 56, 504); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, i * 56); ctx.lineTo(504, i * 56); ctx.stroke();
+    // パスワードチェック
+    function checkPass() {
+        const pass = document.getElementById('pass-input').value;
+        if(pass === 'i-joi') {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('nav').style.display = 'flex';
+            document.getElementById('clock').style.display = 'block';
+            showRoom('home');
+            startClock();
+        } else {
+            alert('合言葉が違います。');
         }
-        // 星
-        const hoshi = [[168,168],[168,336],[336,168],[336,336]];
-        ctx.fillStyle = '#2a1808';
-        hoshi.forEach(h => { ctx.beginPath(); ctx.arc(h[0], h[1], 3, 0, Math.PI*2); ctx.fill(); });
-    });
+    }
 
-    // 駒の描画
-    Events.on(render, 'afterRender', () => {
-        const ctx = render.context;
-        engine.world.bodies.forEach(body => {
-            if (body.label === 'koma') {
-                ctx.save();
-                ctx.translate(body.position.x, body.position.y);
-                ctx.rotate(body.angle);
-                ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230';
-                ctx.beginPath(); ctx.moveTo(0, -18); ctx.lineTo(14, -10); ctx.lineTo(12, 18); ctx.lineTo(-12, 18); ctx.lineTo(-14, -10); ctx.closePath();
-                ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#2a1808'; ctx.font = 'bold 12px serif'; ctx.textAlign = 'center';
-                if (body.isGote) ctx.rotate(Math.PI);
-                ctx.fillText(body.kanji, 0, 5);
-                ctx.restore();
+    // 部屋の切り替え
+    function showRoom(id) {
+        document.querySelectorAll('.room').forEach(r => { r.style.display = 'none'; r.classList.remove('active'); });
+        document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
+        
+        const room = document.getElementById(id);
+        room.style.display = (id === 'shogi' || id === 'home') ? 'flex' : 'block';
+        room.classList.add('active');
+        document.getElementById('btn-' + id).classList.add('active');
+        
+        if (id === 'shogi') initShogi();
+    }
+
+    // 時計
+    function startClock() {
+        setInterval(() => {
+            const n = new Date();
+            document.getElementById('clock-t').textContent = n.toLocaleTimeString();
+        }, 1000);
+    }
+
+    // 将棋盤（Matter.js）
+    let engine, render, runner;
+    function initShogi() {
+        if (engine) return; // 二重起動防止
+
+        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
+        engine = Engine.create();
+        const canvas = document.getElementById('shogiCanvas');
+        render = Render.create({ canvas, engine, options: { width: 504, height: 504, wireframes: false, background: 'transparent' } });
+
+        Events.on(render, 'beforeRender', () => {
+            const ctx = render.context;
+            ctx.fillStyle = '#d4a95a'; ctx.fillRect(0, 0, 504, 504);
+            ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
+            // 9x9の格子
+            for (let i = 0; i <= 9; i++) {
+                ctx.beginPath(); ctx.moveTo(i * 56, 0); ctx.lineTo(i * 56, 504); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i * 56); ctx.lineTo(504, i * 56); ctx.stroke();
             }
+            // 星（ほし）
+            [[168,168],[168,336],[336,168],[336,336]].forEach(h => {
+                ctx.beginPath(); ctx.arc(h[0], h[1], 4, 0, Math.PI*2); ctx.fillStyle = '#2a1808'; ctx.fill();
+            });
         });
-    });
 
-    const pieces = [];
-    const layout = ['香','桂','銀','金','玉','金','銀','桂','香'];
-    for(let i=0; i<9; i++) {
-        // 後手
-        pieces.push(createKoma(i*56+28, 28, layout[i], true));
-        pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
-        // 先手
-        pieces.push(createKoma(i*56+28, 56*8+28, layout[i], false));
-        pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
+        Events.on(render, 'afterRender', () => {
+            const ctx = render.context;
+            engine.world.bodies.forEach(body => {
+                if (body.label === 'koma') {
+                    ctx.save();
+                    ctx.translate(body.position.x, body.position.y);
+                    ctx.rotate(body.angle);
+                    // 駒の形
+                    ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
+                    ctx.fill(); ctx.stroke();
+                    // 漢字
+                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 14px "Noto Serif JP"'; ctx.textAlign = 'center';
+                    if (body.isGote) ctx.rotate(Math.PI);
+                    ctx.fillText(body.kanji, 0, 6);
+                    ctx.restore();
+                }
+            });
+        });
+
+        const pieces = [];
+        const backRow = ['香','桂','銀','金','玉','金','銀','桂','香'];
+        for(let i=0; i<9; i++) {
+            // 後手
+            pieces.push(createKoma(i*56+28, 28, backRow[i], true));
+            pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
+            // 先手
+            pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
+            pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
+        }
+        pieces.push(createKoma(56*7+28, 56*1+28, '飛', true)); pieces.push(createKoma(56*1+28, 56*1+28, '角', true));
+        pieces.push(createKoma(56*1+28, 56*7+28, '飛', false)); pieces.push(createKoma(56*7+28, 56*7+28, '角', false));
+
+        function createKoma(x, y, kanji, isGote) {
+            const b = Bodies.rectangle(x, y, 30, 40, { frictionAir: 0.1, restitution: 0.2 });
+            b.label = 'koma'; b.kanji = kanji; b.isGote = isGote;
+            return b;
+        }
+
+        World.add(engine.world, [...pieces, 
+            Bodies.rectangle(252, -10, 504, 20, { isStatic: true }),
+            Bodies.rectangle(252, 514, 504, 20, { isStatic: true }),
+            Bodies.rectangle(-10, 252, 20, 504, { isStatic: true }),
+            Bodies.rectangle(514, 252, 20, 504, { isStatic: true })
+        ]);
+
+        const mc = MouseConstraint.create(engine, { mouse: Mouse.create(render.canvas), constraint: { stiffness: 0.2, render: { visible: false } } });
+        World.add(engine.world, mc);
+        Render.run(render);
+        Runner.run(Runner.create(), engine);
     }
-    // 飛・角
-    pieces.push(createKoma(56*7+28, 56*1+28, '飛', true)); pieces.push(createKoma(56*1+28, 56*1+28, '角', true));
-    pieces.push(createKoma(56*1+28, 56*7+28, '飛', false)); pieces.push(createKoma(56*7+28, 56*7+28, '角', false));
-
-    function createKoma(x, y, kanji, isGote) {
-        const b = Bodies.rectangle(x, y, 28, 36, { frictionAir: 0.1, restitution: 0.2 });
-        b.label = 'koma'; b.kanji = kanji; b.isGote = isGote;
-        return b;
-    }
-
-    World.add(engine.world, [...pieces, Bodies.rectangle(252, 514, 504, 20, { isStatic: true })]);
-    const mc = MouseConstraint.create(engine, { mouse: Mouse.create(render.canvas) });
-    World.add(engine.world, mc);
-    Render.run(render);
-    Runner.run(Runner.create(), engine);
-}
 </script>
 </body>
 </html>

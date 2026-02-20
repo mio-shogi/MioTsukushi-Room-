@@ -65,7 +65,7 @@
     </div>
 
     <div id="home" class="room" style="text-align:center; padding-top:12rem;">
-        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of i-joi</h2>
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of enjoi</h2>
         <p style="margin-top:2rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
     </div>
 
@@ -89,10 +89,9 @@
     </div>
 
 <script>
-    // パスワードチェック
     function checkPass() {
         const pass = document.getElementById('pass-input').value;
-        if(pass === 'i-joi') {
+        if(pass === 'enjoi') { // 合言葉を「enjoi」に変更しました
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             document.getElementById('clock').style.display = 'block';
@@ -103,7 +102,6 @@
         }
     }
 
-    // 部屋の切り替え
     function showRoom(id) {
         document.querySelectorAll('.room').forEach(r => { r.style.display = 'none'; r.classList.remove('active'); });
         document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
@@ -116,7 +114,6 @@
         if (id === 'shogi') initShogi();
     }
 
-    // 時計
     function startClock() {
         setInterval(() => {
             const n = new Date();
@@ -124,10 +121,9 @@
         }, 1000);
     }
 
-    // 将棋盤（Matter.js）
-    let engine, render, runner;
+    let engine, render;
     function initShogi() {
-        if (engine) return; // 二重起動防止
+        if (engine) return;
 
         const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
         engine = Engine.create();
@@ -138,12 +134,10 @@
             const ctx = render.context;
             ctx.fillStyle = '#d4a95a'; ctx.fillRect(0, 0, 504, 504);
             ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
-            // 9x9の格子
             for (let i = 0; i <= 9; i++) {
                 ctx.beginPath(); ctx.moveTo(i * 56, 0); ctx.lineTo(i * 56, 504); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(0, i * 56); ctx.lineTo(504, i * 56); ctx.stroke();
             }
-            // 星（ほし）
             [[168,168],[168,336],[336,168],[336,336]].forEach(h => {
                 ctx.beginPath(); ctx.arc(h[0], h[1], 4, 0, Math.PI*2); ctx.fillStyle = '#2a1808'; ctx.fill();
             });
@@ -156,11 +150,9 @@
                     ctx.save();
                     ctx.translate(body.position.x, body.position.y);
                     ctx.rotate(body.angle);
-                    // 駒の形
                     ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
                     ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
                     ctx.fill(); ctx.stroke();
-                    // 漢字
                     ctx.fillStyle = '#2a1808'; ctx.font = 'bold 14px "Noto Serif JP"'; ctx.textAlign = 'center';
                     if (body.isGote) ctx.rotate(Math.PI);
                     ctx.fillText(body.kanji, 0, 6);
@@ -172,10 +164,8 @@
         const pieces = [];
         const backRow = ['香','桂','銀','金','玉','金','銀','桂','香'];
         for(let i=0; i<9; i++) {
-            // 後手
             pieces.push(createKoma(i*56+28, 28, backRow[i], true));
             pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
-            // 先手
             pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }

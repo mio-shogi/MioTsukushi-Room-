@@ -15,7 +15,6 @@
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
         #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; font-family:serif; }
-        .lock-hint { margin-top:1rem; font-size:0.75rem; opacity:0.4; letter-spacing:0.1em; }
         #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
@@ -27,7 +26,6 @@
         #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
         #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; justify-content:center; }
         .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
-        .komadai-label { font-size: 0.7rem; margin-bottom: 10px; border-bottom: 1px solid #5d4037; width: 100%; text-align: center; opacity:0.7; }
         #board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
         #shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
     </style>
@@ -37,7 +35,6 @@
     <div id="lock-screen">
         <h1 class="lock-h1">Mio Tsukushi Room</h1>
         <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') checkPass()">
-        <p class="lock-hint">秘密の鍵を入力してください。</p>
     </div>
 
     <nav id="nav">
@@ -56,21 +53,18 @@
 
     <div id="medical" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2>
-        <p style="text-align:center; margin-top:3rem; opacity:0.6; line-height:2;">救急・心臓血管外科。命の鼓動と向き合う研鑽の場。</p>
     </div>
 
     <div id="private" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2>
-        <p style="text-align:center; margin-top:3rem; opacity:0.6; line-height:2;">文学、思想、そして一人の人間としての思索。</p>
     </div>
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div class="komadai"><div class="komadai-label">後手 駒台</div></div>
+            <div class="komadai"></div>
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
-            <div class="komadai"><div class="komadai-label">先手 駒台</div></div>
+            <div class="komadai"></div>
         </div>
-        <p style="text-align:center; margin-top:30px; opacity:0.3; font-size:0.8rem; letter-spacing:0.1em;">飛車と角の位置を正しく修正いたしました。</p>
     </div>
 
 <script>
@@ -80,8 +74,7 @@
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             document.getElementById('clock').style.display = 'block';
-            showRoom('home');
-            startClock();
+            showRoom('home'); startClock();
         } else { alert('合言葉が違います。'); }
     }
 
@@ -115,9 +108,6 @@
                 ctx.beginPath(); ctx.moveTo(i * 56, 0); ctx.lineTo(i * 56, 504); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(0, i * 56); ctx.lineTo(504, i * 56); ctx.stroke();
             }
-            [[168,168],[168,336],[336,168],[336,336]].forEach(h => {
-                ctx.beginPath(); ctx.arc(h[0], h[1], 4, 0, Math.PI*2); ctx.fillStyle = '#2a1808'; ctx.fill();
-            });
         });
 
         Events.on(render, 'afterRender', () => {
@@ -143,13 +133,14 @@
             pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
-        // --- ★ 修正箇所：飛車と角の位置を逆にしました ---
-        // 後手（上側）：角が左(2列目)、飛車が右(8列目)
-        pieces.push(createKoma(56*7+28, 56*1+28, '角', true)); 
-        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true));
-        // 先手（下側）：角が左(2列目)、飛車が右(8列目)
-        pieces.push(createKoma(56*1+28, 56*7+28, '角', false));
+        
+        // 修正：手前(先手) 8筋(右から2番目)に飛車、2筋(左から2番目)に角
+        pieces.push(createKoma(56*1+28, 56*7+28, '角', false)); 
         pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
+        
+        // 修正：奥(後手) 2筋(左から2番目)に飛車、8筋(右から2番目)に角
+        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true)); 
+        pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
 
         function createKoma(x, y, kanji, isGote) {
             const b = Bodies.rectangle(x, y, 30, 40, { frictionAir: 0.2, restitution: 0.1 });

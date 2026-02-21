@@ -15,42 +15,40 @@
 
         .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; padding-bottom: 60px; }
 
-        /* HOME: 万葉集 */
+        /* HOME */
         .poem-box { margin: 60px auto; text-align:center; max-width:650px; padding:40px; border-top:1px solid #b89530; }
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
         .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* MEDICAL & PRIVATE: 写真の箱 (少し大きく修正) */
+        /* MEDICAL & PRIVATE: 写真スタイル */
         .illustration-box {
-            width: 550px; /* 350pxから550pxに拡大：存在感を出しました */
-            margin: 40px auto;
-            overflow: hidden;
-            border-radius: 4px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            cursor: pointer;
+            width: 550px; margin: 40px auto; overflow: hidden; border-radius: 4px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08); transition: all 0.8s; cursor: pointer;
         }
-        .illustration-box img { width: 100%; height: auto; transition: 0.8s; }
+        .illustration-box img { width: 100%; height: auto; }
         .illustration-box:hover { transform: translateY(-10px); box-shadow: 0 25px 60px rgba(184,149,48,0.25); }
 
-        /* SHOGI: 若草色の毛氈 */
+        /* SHOGI */
         #shogi { background: #96a996; } 
         #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(255,255,255,0.25); border-radius: 15px; }
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
-        .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; position: relative; }
+        .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
         .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
+        
+        /* 時計のスタイル */
+        .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; transition: 0.3s; text-align: center;}
+        #clock-gote { transform: rotate(180deg); } /* 後手用時計を180度回転 */
+        .active-turn { border-color:#fff; color:#fff; box-shadow: 0 0 15px rgba(184,149,48,0.6); }
+
         .koma { 
             width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; 
             display:flex; justify-content:center; align-items:center; cursor:grab; 
-            font-weight:bold; font-size:1.1rem; user-select:none; z-index: 10;
+            font-weight:bold; font-size:1.1rem; user-select:none;
             clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%);
         }
         .gote { transform: rotate(180deg); }
         .nari-piece { color: #c0392b; }
-        .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; }
-        .active-turn { border-color:#fff; color:#fff; box-shadow: 0 0 15px rgba(184,149,48,0.6); }
-
-        #nari-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(247,242,233,0.98); padding:2rem; border:1px solid #b89530; display:none; z-index:5000; text-align:center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        #nari-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(247,242,233,0.98); padding:2rem; border:1px solid #b89530; display:none; z-index:5000; text-align:center; }
         #nari-dialog button { margin:10px; padding:10px 25px; cursor:pointer; font-family:'Noto Serif JP'; background:none; border:1px solid #b89530; }
     </style>
 </head>
@@ -91,6 +89,10 @@
         <div class="illustration-box">
             <img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg" alt="Medical Hands">
         </div>
+        <div style="max-width:600px; line-height:2.2; text-align:center; padding: 0 20px;">
+            <p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と、命を繋ぐ意志だけが、この静かな聖域を満たしている。<br><br>
+            メスを置くその瞬間まで、呼吸を整え、心を無に。沈黙の中で交わされる、言葉なき対話。それが執刀医の、唯一無二の真実である。</p>
+        </div>
     </div>
 
     <div id="private" class="room">
@@ -102,9 +104,17 @@
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div style="text-align:center;"><div class="komadai" id="kd-g"></div><div id="clock-gote" class="clock">10:00</div><p style="color:#b89530; font-family:'Cormorant Garamond';">GOTE</p></div>
+            <div style="text-align:center;">
+                <div class="komadai" id="kd-g"></div>
+                <div id="clock-gote" class="clock">10:00</div>
+                <p style="color:#b89530; font-family:'Cormorant Garamond'; transform: rotate(180deg);">GOTE</p>
+            </div>
             <div id="board"></div>
-            <div style="text-align:center;"><p style="color:#b89530; font-family:'Cormorant Garamond';">SENTE</p><div id="clock-sente" class="clock">10:00</div><div class="komadai" id="kd-s"></div></div>
+            <div style="text-align:center;">
+                <p style="color:#b89530; font-family:'Cormorant Garamond';">SENTE</p>
+                <div id="clock-sente" class="clock">10:00</div>
+                <div class="komadai" id="kd-s"></div>
+            </div>
         </div>
     </div>
 

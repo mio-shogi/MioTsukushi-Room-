@@ -8,10 +8,9 @@
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow:hidden; }
         
-        /* 表紙 */
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #nav { position:fixed; top:0; width:100%; display:none; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
-        #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; transition: 0.3s; }
+        #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; }
         #nav button.active { opacity:1; color:#b89530; }
 
         .room { display:none; padding-top:100px; height:100vh; width:100vw; flex-direction:column; align-items:center; overflow-y:auto; position:relative; }
@@ -21,19 +20,19 @@
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
         .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* MEDICAL: 背景お写真 */
-        #medical { background: #0a111a; color: #f0f0f0; }
+        /* MEDICAL: 暗さを払い、明るい静謐さへ */
+        #medical { background: #f0f2f5; color: #333; }
         #medical-bg {
             position: absolute; inset: 0;
-            background-image: url('medical_hands.jpg'); /* ファイル名が正しいかご確認ください */
+            background-image: url('medical_hands.jpg'); 
             background-size: cover; background-position: center;
-            opacity: 0.12; filter: blur(6px); z-index: 0;
+            opacity: 0.18; filter: blur(4px); z-index: 0;
         }
-        #medical .content { z-index: 1; text-align: center; }
+        #medical .content { z-index: 1; text-align: center; margin-top: 40px; }
 
-        /* SHOGI: 深緑の毛氈 */
-        #shogi { background: #2d4033; }
-        #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(0,0,0,0.1); border-radius: 15px; }
+        /* SHOGI: 若草色の毛氈（明るめのグリーン） */
+        #shogi { background: #4a634d; } /* 明るさと落ち着きを両立したグリーン */
+        #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 15px; }
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
         .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
         .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; }
@@ -48,10 +47,8 @@
         .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; }
         .active-turn { border-color:#fff; color:#fff; box-shadow: 0 0 15px rgba(184,149,48,0.6); }
 
-        /* 成りダイアログ */
-        #nari-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(247,242,233,0.98); padding:2rem; border:1px solid #b89530; display:none; z-index:5000; text-align:center; box-shadow:0 10px 50px rgba(0,0,0,0.5); }
-        #nari-dialog button { margin:10px; padding:10px 25px; cursor:pointer; font-family:'Noto Serif JP'; background:none; border:1px solid #b89530; transition: 0.3s; }
-        #nari-dialog button:hover { background: #b89530; color: #fff; }
+        #nari-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(247,242,233,0.98); padding:2rem; border:1px solid #b89530; display:none; z-index:5000; text-align:center; }
+        #nari-dialog button { margin:10px; padding:10px 25px; cursor:pointer; font-family:'Noto Serif JP'; background:none; border:1px solid #b89530; }
     </style>
 </head>
 <body>
@@ -62,7 +59,7 @@
     </div>
 
     <div id="nari-dialog">
-        <p style="margin-bottom: 15px;">駒を成りますか？</p>
+        <p>駒を成りますか？</p>
         <button id="nari-yes">成る</button>
         <button id="nari-no">成らず</button>
     </div>
@@ -89,7 +86,7 @@
         <div id="medical-bg"></div>
         <div class="content">
             <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Archives</h1>
-            <p style="margin-top:20px; opacity:0.8; letter-spacing: 0.1em;">執刀医の視座：静謐なる決断</p>
+            <p style="margin-top:20px; opacity:0.8;">執刀医の視座：静謐なる決断</p>
         </div>
     </div>
 

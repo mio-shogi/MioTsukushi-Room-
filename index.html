@@ -9,33 +9,23 @@
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         html, body { width:100%; height:100%; overflow:hidden; background:#f7f2e9; color:#1c1710; }
-        
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
         #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; }
-        
         #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
-
         .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
-        
         #shogi-container { position:relative; width:860px; height:600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
         .komadai-area { display: flex; flex-direction: column; align-items: center; position: absolute; }
         .gote-side { left: 0; top: 0; }
         .sente-side { right: 0; bottom: 0; }
         .komadai { width:120px; height:200px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); }
-
-        .shogi-clock { 
-            font-family:'Cormorant Garamond', serif; font-size:1.6rem; color:#b89530; background:#1c1710; 
-            padding:10px 20px; border-radius:4px; margin: 10px 0; border: 1px solid #b89530; min-width: 140px; text-align: center; 
-        }
+        .shogi-clock { font-family:'Cormorant Garamond', serif; font-size:1.6rem; color:#b89530; background:#1c1710; padding:10px 20px; border-radius:4px; margin: 10px 0; border: 1px solid #b89530; min-width: 140px; text-align: center; }
         .active-turn { box-shadow: 0 0 20px rgba(184,149,48,0.6); border: 2px solid #fff; }
         .byoyomi { color: #ff4500 !important; border-color: #ff4500 !important; }
-
-        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 40px rgba(0,0,0,0.3); }
-        canvas { display: block; cursor: grab; }
-
+        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; position: relative; }
+        canvas { display: block; cursor: crosshair; }
         .poem-container { margin-top: 4rem; max-width: 700px; margin: 4rem auto 0; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); text-align: center; }
         .poem-jp { font-size: 1.5rem; line-height: 2.5; font-family:'Noto Serif JP',serif; margin-bottom: 1.5rem; }
         .poem-meta { font-size: 0.95rem; line-height: 1.8; opacity: 0.8; text-align: left; max-width: 500px; margin: 0 auto; }
@@ -75,11 +65,11 @@
             <div class="komadai-area gote-side">
                 <div class="komadai"></div>
                 <div id="clock-gote" class="shogi-clock">10:00</div>
-                <div style="font-size:0.8rem; color:#b89530; letter-spacing:0.1em;">GOTE</div>
+                <div style="font-size:0.8rem; color:#b89530;">GOTE</div>
             </div>
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
             <div class="komadai-area sente-side">
-                <div style="font-size:0.8rem; color:#b89530; letter-spacing:0.1em;">SENTE</div>
+                <div style="font-size:0.8rem; color:#b89530;">SENTE</div>
                 <div id="clock-sente" class="shogi-clock">10:00</div>
                 <div class="komadai"></div>
             </div>
@@ -96,32 +86,27 @@
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             showRoom('home');
-            setInterval(tick, 1000);
+            setInterval(() => {
+                if (!activeTurn) return;
+                if (times[activeTurn] > 0) {
+                    times[activeTurn]--;
+                } else if (!isByo[activeTurn]) {
+                    isByo[activeTurn] = true;
+                    times[activeTurn] = 30;
+                } else if (times[activeTurn] > 0) {
+                    times[activeTurn]--;
+                }
+                updateUI();
+            }, 1000);
         } else { alert('Error'); }
     }
 
     function showRoom(id) {
         document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
-        const room = document.getElementById(id);
-        room.style.display = (id === 'shogi') ? 'flex' : 'block';
+        document.getElementById(id).style.display = (id === 'shogi') ? 'flex' : 'block';
         document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-'+id).classList.add('active');
         if (id === 'shogi') initShogi();
-    }
-
-    function tick() {
-        if (!activeTurn) return;
-        if (times[activeTurn] > 0) {
-            times[activeTurn]--;
-        } else {
-            if (!isByo[activeTurn]) {
-                isByo[activeTurn] = true;
-                times[activeTurn] = 30; // 秒読み開始
-            } else {
-                times[activeTurn] = 0; // 時間切れ
-            }
-        }
-        updateUI();
     }
 
     function updateUI() {
@@ -153,7 +138,6 @@
             options: { width: 504, height: 504, wireframes: false, background: 'transparent' }
         });
 
-        // 盤面の線を描画
         Events.on(render, 'beforeRender', () => {
             const ctx = render.context;
             ctx.fillStyle = '#d4a95a'; ctx.fillRect(0,0,504,504);
@@ -182,41 +166,39 @@
         const pieces = [];
         const rows = ['香','桂','銀','金','玉','金','銀','桂','香'];
         for(let i=0; i<9; i++){
-            // 1段目と9段目
             pieces.push(createKoma(i*56+28, 28, rows[i], true));
             pieces.push(createKoma(i*56+28, 56*8+28, rows[i]==='玉'?'王':rows[i], false));
-            // 3段目と7段目（歩）
             pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
-        // 飛車・角の追加
         pieces.push(createKoma(56*1+28, 56*1+28, '飛', true));
         pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
         pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
         pieces.push(createKoma(56*1+28, 56*7+28, '角', false));
 
         function createKoma(x, y, k, g) {
-            const b = Bodies.rectangle(x, y, 38, 48, { frictionAir: 0.1, restitution: 0.1 });
+            const b = Bodies.rectangle(x, y, 38, 48, { frictionAir: 0.2, restitution: 0.1 });
             b.label = 'koma'; b.kanji = k; b.isGote = g; return b;
         }
 
+        const mouse = Mouse.create(render.canvas);
         const mc = MouseConstraint.create(engine, {
-            mouse: Mouse.create(canvas),
-            constraint: { stiffness: 0.2, render: { visible: false } }
+            mouse: mouse,
+            constraint: { stiffness: 0.1, render: { visible: false } }
         });
 
         Events.on(mc, 'enddrag', (e) => {
             if (e.body && e.body.label === 'koma') {
-                if (activeTurn && isByo[activeTurn]) times[activeTurn] = 30; // 秒読みリセット
+                if (activeTurn && isByo[activeTurn]) times[activeTurn] = 30;
                 activeTurn = e.body.isGote ? 'sente' : 'gote';
             }
         });
 
         World.add(engine.world, [...pieces, mc, 
-            Bodies.rectangle(252, -20, 504, 40, { isStatic: true }),
-            Bodies.rectangle(252, 524, 504, 40, { isStatic: true }),
-            Bodies.rectangle(-20, 252, 40, 504, { isStatic: true }),
-            Bodies.rectangle(524, 252, 40, 504, { isStatic: true })
+            Bodies.rectangle(252, -25, 504, 50, { isStatic: true }),
+            Bodies.rectangle(252, 529, 504, 50, { isStatic: true }),
+            Bodies.rectangle(-25, 252, 50, 504, { isStatic: true }),
+            Bodies.rectangle(529, 252, 50, 504, { isStatic: true })
         ]);
 
         Render.run(render);

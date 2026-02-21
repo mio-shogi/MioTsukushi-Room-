@@ -2,161 +2,147 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mio Tsukushi Room</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@300&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        html, body { width:100%; height:100%; overflow:hidden; background:#f7f2e9; color:#1c1710; }
-        #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
-        #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; }
-        #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
-        #nav button { background:none; border:none; font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
-        #nav button.active { opacity:1; color:#b89530; }
-        .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
+        body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; }
         
-        /* 将棋盤：CSSグリッドで線を確実に描画 */
-        #shogi-container { position:relative; width:900px; height:600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; gap: 40px; }
-        .komadai-area { display: flex; flex-direction: column; align-items: center; }
-        .komadai { width:120px; height:200px; background: #e3c08d; border: 2px solid #5d4037; position: relative; }
-        .shogi-clock { font-family:'Cormorant Garamond', serif; font-size:1.6rem; color:#b89530; background:#1c1710; padding:10px 20px; border-radius:4px; margin: 10px 0; border: 1px solid #b89530; min-width: 140px; text-align: center; }
-        .active-turn { box-shadow: 0 0 20px rgba(184,149,48,0.6); border: 2px solid #fff; }
+        /* Navigation */
+        #nav { position:fixed; top:0; width:100%; display:flex; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.2); }
+        #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; letter-spacing:0.2em; cursor:pointer; color:#1c1710; opacity:0.6; }
+        #nav button:hover { opacity:1; color:#b89530; }
 
+        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; }
+
+        /* Shogi Board: CSSだけで線を引く */
+        #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; }
         #board { 
-            display: grid; grid-template-columns: repeat(9, 56px); grid-template-rows: repeat(9, 56px);
-            width: 504px; height: 504px; background: #d4a95a; border: 4px solid #5d4037;
+            display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); 
+            background:#d4a95a; border:3px solid #5d4037; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .cell { border: 0.5px solid #2a1808; position: relative; display: flex; justify-content: center; align-items: center; }
+        .cell { 
+            width:54px; height:54px; border:0.5px solid #2a1808; 
+            display:flex; justify-content:center; align-items:center; 
+        }
         .koma { 
-            width: 40px; height: 48px; background: #faecd5; border: 1.5px solid #7a5230; 
-            clip-path: polygon(50% 0%, 100% 25%, 85% 100%, 15% 100%, 0% 25%);
-            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; cursor: grab; user-select: none;
+            width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; 
+            display:flex; justify-content:center; align-items:center; cursor:grab; 
+            font-weight:bold; font-size:1.2rem; user-select:none;
+            clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%);
         }
-        .koma.gote { transform: rotate(180deg); }
+        .gote { transform: rotate(180deg); }
+        .komadai { width:120px; height:220px; background:#e3c08d; border:2px solid #5d4037; box-shadow: 4px 4px 10px rgba(0,0,0,0.1); }
+        .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; margin:15px 0; text-align:center; min-width:140px; border:1px solid #b89530; border-radius:4px; }
 
-        .poem-container { margin: 4rem auto; max-width: 700px; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); text-align: center; }
-        .poem-jp { font-size: 1.5rem; line-height: 2.5; font-family:'Noto Serif JP',serif; margin-bottom: 1.5rem; }
+        /* Home Style */
+        .poem-box { margin-top: 60px; text-align:center; max-width:600px; padding:40px; border-top:1px solid #b89530; }
+        .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
     </style>
 </head>
 <body>
 
-    <div id="lock-screen">
-        <h1 class="lock-h1">Mio Tsukushi Room</h1>
-        <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') checkPass()">
-    </div>
-
     <nav id="nav">
-        <button id="btn-home" onclick="showRoom('home')">Home</button>
-        <button id="btn-medical" onclick="showRoom('medical')">Medical</button>
-        <button id="btn-private" onclick="showRoom('private')">Private</button>
-        <button id="btn-shogi" onclick="showRoom('shogi')">Shogi Game</button>
+        <button onclick="show('home')">HOME</button>
+        <button onclick="show('shogi')">SHOGI GAME</button>
+        <button onclick="show('medical')">MEDICAL</button>
+        <button onclick="show('private')">PRIVATE</button>
     </nav>
 
-    <div id="home" class="room">
-        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:3.5rem; margin-top: 5rem;">Sanctuary of enjoi</h2>
-        <div class="poem-container">
-            <h3 style="font-family:'Cormorant Garamond',serif; margin-bottom:1.5rem; color:#b89530;">Mio-Tsukushi の由来</h3>
-            <p class="poem-jp">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <p style="opacity:0.8; font-size:0.9rem; text-align:left; max-width:500px; margin:0 auto;">身を尽くし、心を尽くして想うからこそ、夢にまでその姿が現れる……万葉の時代の情熱をここに。</p>
+    <div id="home" class="room" style="display:flex;">
+        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem; letter-spacing:0.1em;">Sanctuary of enjoi</h1>
+        <div class="poem-box">
+            <p class="poem-text">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <p style="opacity:0.7; font-size:0.9rem; text-align:left;">【万葉集 3162】<br>身を尽くし、心を尽くして想うからこそ、しきりに夢にまで現れるのでしょう。</p>
         </div>
     </div>
 
     <div id="shogi" class="room">
-        <div id="shogi-container">
-            <div class="komadai-area">
+        <div id="shogi-layout">
+            <div style="text-align:center;">
                 <div class="komadai"></div>
-                <div id="clock-gote" class="shogi-clock">10:00</div>
-                <div style="font-size:0.8rem; color:#b89530;">GOTE</div>
+                <div id="clock-gote" class="clock">10:00</div>
+                <p style="color:#b89530; font-size:0.8rem;">GOTE</p>
             </div>
+            
             <div id="board"></div>
-            <div class="komadai-area">
-                <div style="font-size:0.8rem; color:#b89530;">SENTE</div>
-                <div id="clock-sente" class="shogi-clock">10:00</div>
+            
+            <div style="text-align:center;">
+                <p style="color:#b89530; font-size:0.8rem;">SENTE</p>
+                <div id="clock-sente" class="clock">10:00</div>
                 <div class="komadai"></div>
             </div>
         </div>
     </div>
 
-    <div id="medical" class="room"></div>
-    <div id="private" class="room"></div>
+    <div id="medical" class="room"><h1>Medical Room</h1></div>
+    <div id="private" class="room"><h1>Private Room</h1></div>
 
 <script>
-    let times = {sente: 600, gote: 600}, isByo = {sente: false, gote: false}, active = null;
-
-    function checkPass() {
-        if(document.getElementById('pass-input').value === 'enjoi') {
-            document.getElementById('lock-screen').style.display = 'none';
-            document.getElementById('nav').style.display = 'flex';
-            showRoom('home');
-            setInterval(tick, 1000);
-        } else { alert('Error'); }
-    }
-
-    function showRoom(id) {
+    let active = null, times = {sente:600, gote:600}, isByo = {sente:false, gote:false};
+    
+    function show(id) {
         document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
-        document.getElementById(id).style.display = (id === 'shogi') ? 'flex' : 'block';
-        if(id === 'shogi') createBoard();
+        document.getElementById(id).style.display = 'flex';
+        if(id === 'shogi') initBoard();
     }
 
-    function tick() {
-        if (!active) return;
-        if (times[active] > 0) times[active]--;
-        else if (!isByo[active]) { isByo[active] = true; times[active] = 30; }
-        else if (times[active] > 0) times[active]--;
+    setInterval(() => {
+        if(!active) return;
+        if(times[active] > 0) {
+            times[active]--;
+        } else if(!isByo[active]) {
+            isByo[active] = true; times[active] = 30;
+        } else if(times[active] > 0) {
+            times[active]--;
+        }
         updateUI();
-    }
+    }, 1000);
 
     function updateUI() {
-        ['sente', 'gote'].forEach(s => {
+        ['sente','gote'].forEach(s => {
             const el = document.getElementById(`clock-${s}`);
-            const m = Math.floor(times[s]/60).toString().padStart(2,'0'), sec = (times[s]%60).toString().padStart(2,'0');
-            el.textContent = isByo[s] ? `Byoyomi:${sec}` : `${m}:${sec}`;
-            el.classList.toggle('active-turn', active === s);
-            if (isByo[s]) el.style.color = '#ff4500';
+            const m = Math.floor(times[s]/60).toString().padStart(2,'0'), sc = (times[s]%60).toString().padStart(2,'0');
+            el.textContent = isByo[s] ? `BYO: ${sc}` : `${m}:${sc}`;
+            el.style.boxShadow = active === s ? "0 0 20px #fff" : "none";
+            if(isByo[s]) el.style.color = "#ff4500";
         });
     }
 
-    function createBoard() {
+    function initBoard() {
         const b = document.getElementById('board');
-        if (b.children.length > 0) return;
-        const initial = {
-            '0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香',
-            '1-1':'飛','7-1':'角','0-2':'歩','1-2':'歩','2-2':'歩','3-2':'歩','4-2':'歩','5-2':'歩','6-2':'歩','7-2':'歩','8-2':'歩',
-            '0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香',
-            '1-7':'角','7-7':'飛','0-6':'歩','1-6':'歩','2-6':'歩','3-6':'歩','4-6':'歩','5-6':'歩','6-6':'歩','7-6':'歩','8-6':'歩'
+        if(b.children.length > 0) return;
+        
+        const layout = {
+            '0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香','1-1':'飛','7-1':'角',
+            '0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香','7-7':'飛','1-7':'角'
         };
-        for(let y=0; y<9; y++) {
-            for(let x=0; x<9; x++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.dataset.pos = `${x}-${y}`;
-                cell.ondragover = e => e.preventDefault();
-                cell.ondrop = drop;
-                const k = initial[`${x}-${y}`];
-                if(k) {
-                    const pc = document.createElement('div');
-                    pc.className = 'koma' + (y < 3 ? ' gote' : '');
-                    pc.textContent = k;
-                    pc.draggable = true;
-                    pc.dataset.side = (y < 3 ? 'gote' : 'sente');
-                    pc.ondragstart = e => { e.dataTransfer.setData('text', e.target.parentElement.dataset.pos); };
-                    cell.appendChild(pc);
-                }
-                b.appendChild(cell);
-            }
-        }
-    }
 
-    function drop(e) {
-        e.preventDefault();
-        const fromPos = e.dataTransfer.getData('text');
-        const fromCell = document.querySelector(`[data-pos="${fromPos}"]`);
-        const koma = fromCell.firstChild;
-        const toCell = e.target.className === 'cell' ? e.target : e.target.parentElement;
-        if (toCell.firstChild && toCell !== fromCell) toCell.removeChild(toCell.firstChild);
-        toCell.appendChild(koma);
-        active = koma.dataset.side === 'gote' ? 'sente' : 'gote';
+        for(let i=0; i<81; i++) {
+            const x = i%9, y = Math.floor(i/9), cell = document.createElement('div');
+            cell.className = 'cell'; cell.dataset.pos = `${x}-${y}`;
+            cell.ondragover = e => e.preventDefault();
+            cell.ondrop = e => {
+                e.preventDefault();
+                const fromPos = e.dataTransfer.getData('text');
+                const piece = document.querySelector(`[data-id="${fromPos}"]`);
+                const toCell = e.target.classList.contains('cell') ? e.target : e.target.parentElement;
+                if(toCell.firstChild) toCell.removeChild(toCell.firstChild);
+                toCell.appendChild(piece);
+                active = piece.dataset.side === 'gote' ? 'sente' : 'gote';
+            };
+
+            const k = layout[`${x}-${y}`] || (y===2 || y===6 ? '歩' : null);
+            if(k) {
+                const p = document.createElement('div');
+                p.className = 'koma' + (y<3 ? ' gote' : '');
+                p.textContent = k; p.draggable = true;
+                p.dataset.id = `k-${i}`; p.dataset.side = (y<3 ? 'gote' : 'sente');
+                p.ondragstart = e => e.dataTransfer.setData('text', e.target.dataset.id);
+                cell.appendChild(p);
+            }
+            b.appendChild(cell);
+        }
     }
 </script>
 </body>

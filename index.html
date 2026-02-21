@@ -7,28 +7,25 @@
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow:hidden; }
-        
-        /* 表紙（結界） */
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3.5rem; margin-bottom:2rem; letter-spacing:0.1em; }
         #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:260px; outline:none; }
 
-        /* ナビゲーション */
         #nav { position:fixed; top:0; width:100%; display:none; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; letter-spacing:0.2em; cursor:pointer; color:#1c1710; opacity:0.5; }
         #nav button.active { opacity:1; color:#b89530; }
 
         .room { display:none; padding-top:100px; height:100vh; width:100vw; flex-direction:column; align-items:center; overflow-y:auto; }
-
-        /* HOME: 万葉集 */
         .poem-box { margin: 60px auto; text-align:center; max-width:650px; padding:40px; border-top:1px solid #b89530; }
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
-        .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* SHOGI: 盤面 */
+        /* 将棋盤と駒台 */
         #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; }
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
         .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
+        .komadai-wrap { display: flex; flex-direction: column; align-items: center; }
+        .komadai { width:120px; height:220px; background:#e3c08d; border:2px solid #5d4037; box-shadow: 4px 4px 10px rgba(0,0,0,0.1); position: relative; }
+        
         .koma { 
             width:42px; height:48px; background:#faecd5; border:1.2px solid #7a5230; 
             display:flex; justify-content:center; align-items:center; cursor:grab; 
@@ -58,27 +55,26 @@
         <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem; letter-spacing:0.15em;">Sanctuary of enjoi</h1>
         <div class="poem-box">
             <p class="poem-text">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <div class="poem-meta">
-                <p><strong>【万葉集 第十二巻：3162】</strong></p>
-                <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
-            </div>
+            <p style="opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8;"><strong>【万葉集 第十二巻：3162】</strong><br>私が身を尽くし、心を尽くして想っているからでしょうか。こんなにもしきりに夢に見えるのは。</p>
         </div>
     </div>
 
-    <div id="medical" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Room</h1>
-        <p style="margin-top:2rem; opacity:0.6;">Specialist in Cardiovascular Surgery</p>
-    </div>
-
-    <div id="private" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
-    </div>
+    <div id="medical" class="room"><h1>Medical Room</h1></div>
+    <div id="private" class="room"><h1>Private Room</h1></div>
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div style="text-align:center;"><div id="clock-gote" class="clock">10:00</div><p style="color:#b89530;">GOTE</p></div>
+            <div class="komadai-wrap">
+                <div class="komadai" id="komadai-gote"></div>
+                <div id="clock-gote" class="clock">10:00</div>
+                <p style="color:#b89530;">GOTE</p>
+            </div>
             <div id="board"></div>
-            <div style="text-align:center;"><p style="color:#b89530;">SENTE</p><div id="clock-sente" class="clock">10:00</div></div>
+            <div class="komadai-wrap">
+                <p style="color:#b89530;">SENTE</p>
+                <div id="clock-sente" class="clock">10:00</div>
+                <div class="komadai" id="komadai-sente"></div>
+            </div>
         </div>
     </div>
 
@@ -129,20 +125,22 @@
         for(let i=0; i<81; i++) {
             const x=i%9, y=Math.floor(i/9), cell=document.createElement('div');
             cell.className='cell';
-            cell.ondragover=e=>e.preventDefault();
-            cell.ondrop=function(e){
+            cell.dataset.pos=`${x}-${y}`;
+            cell.addEventListener('dragover', e => e.preventDefault());
+            cell.addEventListener('drop', function(e) {
                 e.preventDefault();
-                const id=e.dataTransfer.getData('text'), piece=document.getElementById(id);
-                const target=e.target.classList.contains('cell') ? e.target : e.target.parentElement;
-                target.appendChild(piece);
-                active = piece.dataset.s==='gote' ? 'sente' : 'gote';
+                const id = e.dataTransfer.getData('text/plain');
+                const piece = document.getElementById(id);
+                this.appendChild(piece);
+                active = piece.dataset.s === 'gote' ? 'sente' : 'gote';
                 updateUI();
-            };
+            });
+
             const k = layout[`${x}-${y}`] || (y===2||y===6?'歩':null);
             if(k){
-                const p=document.createElement('div'); p.id='k-'+i; p.className='koma'+(y<3?' gote':'');
+                const p=document.createElement('div'); p.id='p-'+i; p.className='koma'+(y<3?' gote':'');
                 p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente';
-                p.ondragstart=e=>e.dataTransfer.setData('text', e.target.id);
+                p.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', e.target.id));
                 cell.appendChild(p);
             }
             b.appendChild(cell);

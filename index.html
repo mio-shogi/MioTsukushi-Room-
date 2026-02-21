@@ -18,16 +18,30 @@
         #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
+        
+        /* 時計のデザイン（将棋部屋用と共用） */
+        .digital-clock-small { font-family:'Cormorant Garamond', serif; font-size:0.9rem; color:#b89530; margin-bottom: 5px; text-align: center; letter-spacing: 0.1em; }
         #clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; display:none; }
         #clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:0.15em; color:#1c1710; opacity:0.5; }
+
         .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
         .room.active { display:block; animation:fadeIn 0.8s ease both; }
         @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+        
+        /* 万葉集セクションの装飾 */
+        .poem-container { margin-top: 4rem; max-width: 700px; margin-left: auto; margin-right: auto; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); }
+        .poem-jp { font-size: 1.4rem; line-height: 2.5; margin-bottom: 1.5rem; }
+        .poem-meta { font-size: 0.9rem; opacity: 0.7; text-align: left; line-height: 1.8; }
+
         #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
-        #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; justify-content:center; }
+        #shogi-layout { display:flex; align-items:flex-end; gap:40px; margin-top: 20px; justify-content:center; }
+        .komadai-wrap { display: flex; flex-direction: column; align-items: center; }
         .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
         #board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
         #shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+        
+        /* 画像・文章スペース */
+        .content-placeholder { margin: 3rem auto; max-width: 800px; border: 1px dashed rgba(184,149,48,.3); padding: 2rem; text-align: center; color: rgba(28,23,16,.4); }
     </style>
 </head>
 <body>
@@ -46,24 +60,45 @@
 
     <div id="clock"><div id="clock-t"></div></div>
 
-    <div id="home" class="room" style="text-align:center; padding-top:12rem;">
-        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of enjoi</h2>
-        <p style="margin-top:2rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
+    <div id="home" class="room" style="text-align:center;">
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300; margin-top: 5rem;">Sanctuary of enjoi</h2>
+        <p style="margin-top:1rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
+        
+        <div class="poem-container">
+            <h3 style="font-family:'Cormorant Garamond',serif; letter-spacing:0.1em; margin-bottom:1rem;">Mio-Tsukushi の由来</h3>
+            <p class="poem-jp">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <div class="poem-meta">
+                <p><strong>【万葉集 第十二巻:3162】</strong></p>
+                <p>妻が身を尽くして、心を尽くして私のことを思ってくれているからでしょうか。しきりと妻のことを夢に見ます。</p>
+                <p style="margin-top:10px; font-style: italic; opacity: 0.8;">
+                    In the Manyoshu, "Mio-tsu-kushi" is a pivot word for "Mi-wo-tsukushi" (giving one's everything for a loved one).<br>
+                    Is it because my wife cares for me with all her heart and soul? She often appears in my dream.
+                </p>
+            </div>
+        </div>
     </div>
 
     <div id="medical" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2>
+        <div class="content-placeholder">医学的知見と日々の研鑽をここに。</div>
     </div>
 
     <div id="private" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2>
+        <div class="content-placeholder">私的な想いと、茜との対話をここに。</div>
     </div>
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div class="komadai"></div>
+            <div class="komadai-wrap">
+                <div class="digital-clock-small clock-sync">00:00:00</div>
+                <div class="komadai"></div>
+            </div>
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
-            <div class="komadai"></div>
+            <div class="komadai-wrap">
+                <div class="digital-clock-small clock-sync">00:00:00</div>
+                <div class="komadai"></div>
+            </div>
         </div>
     </div>
 
@@ -88,7 +123,14 @@
         if (id === 'shogi') initShogi();
     }
 
-    function startClock() { setInterval(() => { const n = new Date(); document.getElementById('clock-t').textContent = n.toLocaleTimeString(); }, 1000); }
+    function startClock() { 
+        setInterval(() => { 
+            const n = new Date(); 
+            const timeStr = n.toLocaleTimeString();
+            document.getElementById('clock-t').textContent = timeStr; 
+            document.querySelectorAll('.clock-sync').forEach(el => el.textContent = timeStr);
+        }, 1000); 
+    }
 
     let engine, render;
     function initShogi() {
@@ -114,13 +156,24 @@
             const ctx = render.context;
             engine.world.bodies.forEach(body => {
                 if (body.label === 'koma') {
-                    ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
+                    ctx.save(); 
+                    ctx.translate(body.position.x, body.position.y); 
+                    ctx.rotate(body.angle);
+                    
+                    // 相手の駒(後手)の場合は、形を描画する前に180度回転
+                    if (body.isGote) { ctx.rotate(Math.PI); }
+
                     ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
+                    ctx.beginPath(); 
+                    // 駒の形（五角形）を尖った方が上に向くように描画
+                    ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); 
+                    ctx.closePath();
                     ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 14px "Noto Serif JP"'; ctx.textAlign = 'center';
-                    if (body.isGote) ctx.rotate(Math.PI);
-                    ctx.fillText(body.kanji, 0, 6); ctx.restore();
+
+                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 16px "Noto Serif JP"'; ctx.textAlign = 'center';
+                    // 文字を配置
+                    ctx.fillText(body.kanji, 0, 7); 
+                    ctx.restore();
                 }
             });
         });
@@ -134,16 +187,13 @@
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
         
-        // 修正：手前(先手) 8筋(右から2番目)に飛車、2筋(左から2番目)に角
         pieces.push(createKoma(56*1+28, 56*7+28, '角', false)); 
         pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
-        
-        // 修正：奥(後手) 2筋(左から2番目)に飛車、8筋(右から2番目)に角
         pieces.push(createKoma(56*1+28, 56*1+28, '飛', true)); 
         pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
 
         function createKoma(x, y, kanji, isGote) {
-            const b = Bodies.rectangle(x, y, 30, 40, { frictionAir: 0.2, restitution: 0.1 });
+            const b = Bodies.rectangle(x, y, 32, 42, { frictionAir: 0.2, restitution: 0.1 });
             b.label = 'koma'; b.kanji = kanji; b.isGote = isGote;
             return b;
         }

@@ -12,9 +12,11 @@
         html, body { width:100%; height:100%; }
         body { font-family:'Noto Serif JP', serif; font-weight:300; background:#f7f2e9; color:#1c1710; overflow:hidden; }
         body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.025; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
         #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; font-family:serif; }
+        
         #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
@@ -31,29 +33,34 @@
         .poem-jp { font-size: 1.4rem; line-height: 2.5; margin-bottom: 1.5rem; }
         .poem-meta { font-size: 0.9rem; opacity: 0.7; text-align: left; line-height: 1.8; }
 
-        /* 将棋レイアウト：対角線の配置 */
-        #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
-        #shogi-layout { 
-            position: relative;
-            width: 780px; /* 駒台＋盤面＋駒台の幅 */
-            height: 600px; 
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        /* 将棋レイアウト：完全な対角線配置 */
+        #shogi { background:#f7f2e9; display:none; justify-content:center; align-items:center; }
+        #shogi-container { position:relative; width:800px; height:600px; display:flex; justify-content:center; align-items:center; }
 
-        .komadai-set { display: flex; flex-direction: column; align-items: center; position: absolute; }
-        .gote-side { left: 0; top: 0; }  /* 左上（後手） */
-        .sente-side { right: 0; bottom: 0; } /* 右下（先手） */
+        .komadai-area { display: flex; flex-direction: column; align-items: center; position: absolute; }
+        .gote-side { left: 0; top: 20px; }   /* 相手（左上） */
+        .sente-side { right: 0; bottom: 20px; } /* 自分（右下） */
 
-        .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); }
-        .digital-clock-small { font-family:'Cormorant Garamond', serif; font-size:1.1rem; color:#b89530; background:#1c1710; padding:4px 12px; border-radius:3px; margin: 8px 0; letter-spacing: 0.1em; }
-
-        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
-        #shogiCanvas { width:100%; height:100%; }
+        .komadai { width:120px; height:200px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); }
         
-        .content-placeholder { margin: 3rem auto; max-width: 800px; border: 1px dashed rgba(184,149,48,.3); padding: 2rem; text-align: center; color: rgba(28,23,16,.4); }
+        /* 対局時計のデザイン：視認性を極限まで高める */
+        .shogi-clock { 
+            font-family:'Cormorant Garamond', serif; 
+            font-size:1.5rem; 
+            color:#b89530; 
+            background:#1c1710; 
+            padding:8px 20px; 
+            border-radius:4px; 
+            margin: 10px 0; 
+            letter-spacing: 0.15em;
+            border: 1px solid #b89530;
+            min-width: 140px;
+            text-align: center;
+        }
+        .shogi-clock.active-turn { box-shadow: 0 0 15px #b89530; border: 2px solid #fff; }
+
+        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.3); overflow:hidden; }
+        #shogiCanvas { width:100%; height:100%; }
     </style>
 </head>
 <body>
@@ -74,46 +81,36 @@
 
     <div id="home" class="room" style="text-align:center;">
         <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300; margin-top: 5rem;">Sanctuary of enjoi</h2>
-        <p style="margin-top:1rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
-        
         <div class="poem-container">
             <h3 style="font-family:'Cormorant Garamond',serif; letter-spacing:0.1em; margin-bottom:1rem;">Mio-Tsukushi の由来</h3>
             <p class="poem-jp">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
             <div class="poem-meta">
                 <p><strong>【万葉集 第十二巻:3162】</strong></p>
-                <p>妻が身を尽くして、心を尽くして私のことを思ってくれているからでしょうか。しきりと妻のことを夢に見ます。</p>
-                <p style="margin-top:10px; font-style: italic; opacity: 0.8;">
-                    In the Manyoshu, "Mio-tsu-kushi" is a pivot word for "Mi-wo-tsukushi" (giving one's everything for a loved one).<br>
-                    Is it because my wife cares for me with all her heart and soul? She often appears in my dream.
-                </p>
+                <p>意味: 妻が身を尽くして、心を尽くして私のことを思ってくれているからでしょうか。しきりと妻のことを夢に見ます。</p>
             </div>
         </div>
     </div>
 
-    <div id="medical" class="room">
-        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2>
-        <div class="content-placeholder">医学的知見と日々の研鑽をここに。</div>
-    </div>
-
-    <div id="private" class="room">
-        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2>
-        <div class="content-placeholder">私的な想いと、茜との対話をここに。</div>
-    </div>
+    <div id="medical" class="room"><h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2></div>
+    <div id="private" class="room"><h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2></div>
 
     <div id="shogi" class="room">
-        <div id="shogi-layout">
-            <div class="komadai-set gote-side">
+        <div id="shogi-container">
+            <div class="komadai-area gote-side">
                 <div class="komadai"></div>
-                <div class="digital-clock-small clock-sync">00:00:00</div>
+                <div id="clock-gote" class="shogi-clock">00:00</div>
+                <div style="font-size:0.7rem; color:#b89530;">GOTE</div>
             </div>
 
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
 
-            <div class="komadai-set sente-side">
-                <div class="digital-clock-small clock-sync">00:00:00</div>
+            <div class="komadai-area sente-side">
+                <div style="font-size:0.7rem; color:#b89530;">SENTE</div>
+                <div id="clock-sente" class="shogi-clock">00:00</div>
                 <div class="komadai"></div>
             </div>
         </div>
+        <p style="margin-top:20px; opacity:0.6;">駒を指すと、相手の時計が動き出します。</p>
     </div>
 
 <script>
@@ -123,7 +120,7 @@
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             document.getElementById('clock').style.display = 'block';
-            showRoom('home'); startClock();
+            showRoom('home'); startGlobalClock();
         } else { alert('合言葉が違います。'); }
     }
 
@@ -137,18 +134,34 @@
         if (id === 'shogi') initShogi();
     }
 
-    function startClock() { 
-        setInterval(() => { 
-            const n = new Date(); 
-            const timeStr = n.toLocaleTimeString();
-            document.getElementById('clock-t').textContent = timeStr; 
-            document.querySelectorAll('.clock-sync').forEach(el => el.textContent = timeStr);
-        }, 1000); 
+    // グローバル時計
+    function startGlobalClock() { setInterval(() => { const n = new Date(); document.getElementById('clock-t').textContent = n.toLocaleTimeString(); }, 1000); }
+
+    // 対局時計ロジック
+    let senteTime = 0, goteTime = 0, activeTurn = null; // null, 'sente', 'gote'
+    function startShogiClock() {
+        setInterval(() => {
+            if (activeTurn === 'sente') {
+                senteTime++;
+                updateClockDisplay('sente', senteTime);
+            } else if (activeTurn === 'gote') {
+                goteTime++;
+                updateClockDisplay('gote', goteTime);
+            }
+        }, 1000);
+    }
+    function updateClockDisplay(side, seconds) {
+        const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const sec = (seconds % 60).toString().padStart(2, '0');
+        document.getElementById(`clock-${side}`).textContent = `${min}:${sec}`;
+        document.querySelectorAll('.shogi-clock').forEach(c => c.classList.remove('active-turn'));
+        document.getElementById(`clock-${side}`).classList.add('active-turn');
     }
 
     let engine, render;
     function initShogi() {
         if (engine) return;
+        startShogiClock();
         const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
         engine = Engine.create();
         engine.world.gravity.y = 0; 
@@ -165,6 +178,7 @@
             }
         });
 
+        // 駒の描画
         Events.on(render, 'afterRender', () => {
             const ctx = render.context;
             engine.world.bodies.forEach(body => {
@@ -172,10 +186,10 @@
                     ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                     if (body.isGote) { ctx.rotate(Math.PI); }
                     ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
+                    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(18, -13); ctx.lineTo(15, 22); ctx.lineTo(-15, 22); ctx.lineTo(-18, -13); ctx.closePath();
                     ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 16px "Noto Serif JP"'; ctx.textAlign = 'center';
-                    ctx.fillText(body.kanji, 0, 7); 
+                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 18px "Noto Serif JP"'; ctx.textAlign = 'center';
+                    ctx.fillText(body.kanji, 0, 8); 
                     ctx.restore();
                 }
             });
@@ -195,7 +209,7 @@
         pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
 
         function createKoma(x, y, kanji, isGote) {
-            const b = Bodies.rectangle(x, y, 32, 42, { frictionAir: 0.2, restitution: 0.1 });
+            const b = Bodies.rectangle(x, y, 36, 46, { frictionAir: 0.1, restitution: 0.1 });
             b.label = 'koma'; b.kanji = kanji; b.isGote = isGote;
             return b;
         }
@@ -208,6 +222,15 @@
         ]);
 
         const mc = MouseConstraint.create(engine, { mouse: Mouse.create(render.canvas), constraint: { stiffness: 0.2, render: { visible: false } } });
+        
+        // 駒を動かした（指した）ときのイベント
+        Events.on(mc, 'enddrag', (event) => {
+            if (event.body && event.body.label === 'koma') {
+                // 指した駒が先手なら、次は後手の番。後手なら次は先手の番。
+                activeTurn = event.body.isGote ? 'sente' : 'gote';
+            }
+        });
+
         World.add(engine.world, mc);
         Render.run(render);
         Runner.run(Runner.create(), engine);

@@ -37,6 +37,8 @@
         canvas { display: block; cursor: grab; }
 
         .poem-container { margin-top: 4rem; max-width: 700px; margin: 4rem auto 0; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); text-align: center; }
+        .poem-jp { font-size: 1.5rem; line-height: 2.5; font-family:'Noto Serif JP',serif; margin-bottom: 1.5rem; }
+        .poem-meta { font-size: 0.95rem; line-height: 1.8; opacity: 0.8; text-align: left; max-width: 500px; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -50,14 +52,18 @@
         <button id="btn-home" onclick="showRoom('home')">Home</button>
         <button id="btn-medical" onclick="showRoom('medical')">Medical</button>
         <button id="btn-private" onclick="showRoom('private')">Private</button>
-        <button id="btn-shogi" onclick="showRoom('shogi')">将棋</button>
+        <button id="btn-shogi" onclick="showRoom('shogi')">Shogi Game</button>
     </nav>
 
     <div id="home" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:3.5rem; margin-top: 5rem;">Sanctuary of enjoi</h2>
         <div class="poem-container">
-            <h3 style="font-family:'Cormorant Garamond',serif; margin-bottom:1rem;">Mio-Tsukushi の由来</h3>
-            <p style="font-size: 1.4rem; line-height: 2.5; font-family:'Noto Serif JP',serif;">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <h3 style="font-family:'Cormorant Garamond',serif; margin-bottom:1.5rem; color:#b89530; letter-spacing:0.1em;">Mio-Tsukushi の由来</h3>
+            <p class="poem-jp">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <div class="poem-meta">
+                <p><strong>【万葉集 第十二巻:3162】</strong></p>
+                <p>意味: 私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
+            </div>
         </div>
     </div>
 
@@ -69,11 +75,11 @@
             <div class="komadai-area gote-side">
                 <div class="komadai"></div>
                 <div id="clock-gote" class="shogi-clock">10:00</div>
-                <div style="font-size:0.8rem; color:#b89530;">GOTE</div>
+                <div style="font-size:0.8rem; color:#b89530; letter-spacing:0.1em;">GOTE</div>
             </div>
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
             <div class="komadai-area sente-side">
-                <div style="font-size:0.8rem; color:#b89530;">SENTE</div>
+                <div style="font-size:0.8rem; color:#b89530; letter-spacing:0.1em;">SENTE</div>
                 <div id="clock-sente" class="shogi-clock">10:00</div>
                 <div class="komadai"></div>
             </div>
@@ -110,9 +116,9 @@
         } else {
             if (!isByo[activeTurn]) {
                 isByo[activeTurn] = true;
-                times[activeTurn] = 30;
+                times[activeTurn] = 30; // 秒読み開始
             } else {
-                times[activeTurn] = 0;
+                times[activeTurn] = 0; // 時間切れ
             }
         }
         updateUI();
@@ -122,7 +128,7 @@
         ['sente', 'gote'].forEach(s => {
             const el = document.getElementById(`clock-${s}`);
             if (isByo[s]) {
-                el.textContent = `秒読み:${times[s]}`;
+                el.textContent = `Byoyomi:${times[s]}`;
                 el.classList.add('byoyomi');
             } else {
                 const m = Math.floor(times[s]/60).toString().padStart(2,'0');
@@ -140,19 +146,21 @@
         engine = Engine.create();
         engine.world.gravity.y = 0;
 
+        const canvas = document.getElementById('shogiCanvas');
         const render = Render.create({
-            canvas: document.getElementById('shogiCanvas'),
+            canvas: canvas,
             engine: engine,
             options: { width: 504, height: 504, wireframes: false, background: 'transparent' }
         });
 
+        // 盤面の線を描画
         Events.on(render, 'beforeRender', () => {
             const ctx = render.context;
             ctx.fillStyle = '#d4a95a'; ctx.fillRect(0,0,504,504);
             ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
             for(let i=0; i<=9; i++) {
-                ctx.beginPath(); ctx.moveTo(i*56,0); ctx.lineTo(i*56,504); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0,i*56); ctx.lineTo(504,i*56); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(i*56, 0); ctx.lineTo(i*56, 504); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i*56); ctx.lineTo(504, i*56); ctx.stroke();
             }
         });
 
@@ -174,25 +182,32 @@
         const pieces = [];
         const rows = ['香','桂','銀','金','玉','金','銀','桂','香'];
         for(let i=0; i<9; i++){
+            // 1段目と9段目
             pieces.push(createKoma(i*56+28, 28, rows[i], true));
-            pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
             pieces.push(createKoma(i*56+28, 56*8+28, rows[i]==='玉'?'王':rows[i], false));
+            // 3段目と7段目（歩）
+            pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
+        // 飛車・角の追加
+        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true));
+        pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
+        pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
+        pieces.push(createKoma(56*1+28, 56*7+28, '角', false));
+
         function createKoma(x, y, k, g) {
             const b = Bodies.rectangle(x, y, 38, 48, { frictionAir: 0.1, restitution: 0.1 });
             b.label = 'koma'; b.kanji = k; b.isGote = g; return b;
         }
 
-        const mouse = Mouse.create(render.canvas);
         const mc = MouseConstraint.create(engine, {
-            mouse: mouse,
+            mouse: Mouse.create(canvas),
             constraint: { stiffness: 0.2, render: { visible: false } }
         });
 
         Events.on(mc, 'enddrag', (e) => {
             if (e.body && e.body.label === 'koma') {
-                if (activeTurn && isByo[activeTurn]) times[activeTurn] = 30;
+                if (activeTurn && isByo[activeTurn]) times[activeTurn] = 30; // 秒読みリセット
                 activeTurn = e.body.isGote ? 'sente' : 'gote';
             }
         });

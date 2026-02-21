@@ -3,163 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mio Tsukushi Room</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@300;400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <title>Mio-Tsukushi | みをつくし</title>
     <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        html, body { width:100%; height:100%; }
-        body { font-family:'Noto Serif JP', serif; font-weight:300; background:#f7f2e9; color:#1c1710; overflow:hidden; }
-        body::after { content:''; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.025; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E"); }
-        #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .lock-h1 { font-family:'Cormorant Garamond', serif; font-size:3rem; margin-bottom:2rem; letter-spacing:0.1em; }
-        #pass-input { padding:12px; font-size:1.1rem; border:1px solid rgba(184,149,48,0.5); background:transparent; text-align:center; width:240px; outline:none; font-family:serif; }
-        #nav { position:fixed; top:0; left:0; right:0; z-index:500; display:none; justify-content:center; background:rgba(247,242,233,.95); border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
-        #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
-        #nav button.active { opacity:1; color:#b89530; }
-        #clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; display:none; }
-        #clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:0.15em; color:#1c1710; opacity:0.5; }
-        .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
-        .room.active { display:block; animation:fadeIn 0.8s ease both; }
-        @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
-        #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
-        #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; justify-content:center; }
-        .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
-        #board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
-        #shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+        :root {
+            --primary-bg: #fdfaf5;
+            --text-color: #2c2c2c;
+            --accent-color: #8b0000; /* 朱色 */
+            --sub-text: #555;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Sawarabi Mincho', serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.8;
+        }
+
+        /* --- 表紙セクション --- */
+        .cover-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .title-main {
+            font-size: 3rem;
+            letter-spacing: 0.5rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .poem-box {
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .poem-text {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #000;
+        }
+
+        .meaning-box {
+            text-align: left;
+            font-size: 0.95rem;
+            color: var(--sub-text);
+            border-left: 3px solid var(--accent-color);
+            padding-left: 20px;
+        }
+
+        .english-box {
+            margin-top: 20px;
+            font-style: italic;
+            font-family: 'Times New Roman', serif;
+            color: #666;
+        }
+
+        /* --- 将棋の部屋セクション --- */
+        .shogi-section {
+            padding: 60px 20px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .board-container {
+            position: relative;
+            display: grid;
+            grid-template-columns: 80px 450px 80px; /* 駒台-盤面-駒台 */
+            gap: 20px;
+            align-items: end;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            width: 450px;
+            height: 500px;
+            border: 2px solid #333;
+            background-color: #edcb96;
+        }
+
+        .cell {
+            border: 0.5px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* 駒のデザイン */
+        .piece {
+            width: 80%;
+            height: 85%;
+            background-color: #ffce7b;
+            clip-path: polygon(50% 0%, 100% 25%, 85% 100%, 15% 100%, 0% 25%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 相手の駒：形も文字も180度反転 */
+        .piece.opponent {
+            transform: rotate(180deg);
+            background-color: #f3c16a;
+        }
+
+        /* デジタル時計 */
+        .digital-clock {
+            font-family: 'Courier New', Courier, monospace;
+            background: #222;
+            color: #0f0; /* 初期は緑、後で変更可 */
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 10px;
+            box-shadow: inset 0 0 5px #000;
+        }
+
+        /* 駒台エリア */
+        .komadai {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- コンテンツセクション --- */
+        .content-section {
+            padding: 80px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 400px;
+            background-color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #ccc;
+            margin-bottom: 30px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.8rem;
+            color: #999;
+        }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="lock-screen">
-        <h1 class="lock-h1">Mio Tsukushi Room</h1>
-        <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') checkPass()">
-    </div>
+    <section class="cover-section">
+        <h1 class="title-main">Mio-Tsukushi</h1>
+        <div class="poem-box">
+            <p class="poem-text">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            
+            <div class="meaning-box">
+                <p><strong>意味:</strong> 妻が身を尽くして、心を尽くして私のことを思ってくれているからでしょうか。しきりと妻のことを夢に見ます。</p>
+                <p><small>※旅先で詠まれた歌。当時は想っている人が夢に現れると信じられていました。</small></p>
+            </div>
 
-    <nav id="nav">
-        <button id="btn-home" onclick="showRoom('home')">Home</button>
-        <button id="btn-medical" onclick="showRoom('medical')">Medical</button>
-        <button id="btn-private" onclick="showRoom('private')">Private</button>
-        <button id="btn-shogi" onclick="showRoom('shogi')">将棋</button>
-    </nav>
-
-    <div id="clock"><div id="clock-t"></div></div>
-
-    <div id="home" class="room" style="text-align:center; padding-top:12rem;">
-        <h2 style="font-family:'Cormorant Garamond',serif; font-size:3.5rem; font-weight:300;">Sanctuary of enjoi</h2>
-        <p style="margin-top:2rem; opacity:0.5; letter-spacing:0.2em;">知性と情熱、そして静寂の記録。</p>
-    </div>
-
-    <div id="medical" class="room">
-        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2>
-    </div>
-
-    <div id="private" class="room">
-        <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2>
-    </div>
-
-    <div id="shogi" class="room">
-        <div id="shogi-layout">
-            <div class="komadai"></div>
-            <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
-            <div class="komadai"></div>
+            <div class="english-box">
+                <p>"Mio-tsu-kushi" is a pivot word for "Mi-wo-tsukushi" (giving one's everything for a loved one).</p>
+                <p>Rough meaning: Is it because my wife cares for me with all her heart and soul? She often appears in my dream.</p>
+            </div>
         </div>
-    </div>
+    </section>
 
-<script>
-    function checkPass() {
-        const pass = document.getElementById('pass-input').value;
-        if(pass === 'enjoi') {
-            document.getElementById('lock-screen').style.display = 'none';
-            document.getElementById('nav').style.display = 'flex';
-            document.getElementById('clock').style.display = 'block';
-            showRoom('home'); startClock();
-        } else { alert('合言葉が違います。'); }
-    }
+    <section class="shogi-section">
+        <h2>将棋の部屋</h2>
+        <div class="board-container">
+            <div class="komadai">
+                <div id="clock-opponent" class="digital-clock">00:00:00</div>
+                <div style="height:100px; width:70px; background:#d4a373; border:1px solid #333;"></div>
+            </div>
 
-    function showRoom(id) {
-        document.querySelectorAll('.room').forEach(r => { r.style.display = 'none'; r.classList.remove('active'); });
-        document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
-        const room = document.getElementById(id);
-        room.style.display = (id === 'shogi' || id === 'home') ? 'flex' : 'block';
-        room.classList.add('active');
-        document.getElementById('btn-' + id).classList.add('active');
-        if (id === 'shogi') initShogi();
-    }
+            <div class="board" id="shogi-board">
+                </div>
 
-    function startClock() { setInterval(() => { const n = new Date(); document.getElementById('clock-t').textContent = n.toLocaleTimeString(); }, 1000); }
+            <div class="komadai">
+                <div id="clock-self" class="digital-clock">00:00:00</div>
+                <div style="height:100px; width:70px; background:#d4a373; border:1px solid #333;"></div>
+            </div>
+        </div>
+    </section>
 
-    let engine, render;
-    function initShogi() {
-        if (engine) return;
-        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
-        engine = Engine.create();
-        engine.world.gravity.y = 0; 
+    <section class="content-section">
+        <h3>日々の記憶</h3>
+        <div class="image-placeholder">
+            <p>ここに大切なお写真をアップロードしてください</p>
+        </div>
+        <div class="article-text">
+            <p>ここに茜さんとの物語や、日々の想いを綴ってください。文章を書き入れることで、サイトに「内面的な美しさ」が宿ります。</p>
+        </div>
+    </section>
 
-        const canvas = document.getElementById('shogiCanvas');
-        render = Render.create({ canvas, engine, options: { width: 504, height: 504, wireframes: false, background: 'transparent' } });
+    <footer>
+        &copy; 2026 Mio-Tsukushi Project
+    </footer>
 
-        Events.on(render, 'beforeRender', () => {
-            const ctx = render.context;
-            ctx.fillStyle = '#d4a95a'; ctx.fillRect(0, 0, 504, 504);
-            ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
-            for (let i = 0; i <= 9; i++) {
-                ctx.beginPath(); ctx.moveTo(i * 56, 0); ctx.lineTo(i * 56, 504); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i * 56); ctx.lineTo(504, i * 56); ctx.stroke();
+    <script>
+        // デジタル時計の更新
+        function updateClocks() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
+                            now.getMinutes().toString().padStart(2, '0') + ":" + 
+                            now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('clock-self').textContent = timeStr;
+            document.getElementById('clock-opponent').textContent = timeStr;
+        }
+        setInterval(updateClocks, 1000);
+        updateClocks();
+
+        // 盤面の生成（簡易版）
+        const board = document.getElementById('shogi-board');
+        for (let i = 0; i < 81; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            
+            // 上部2列に相手の駒を配置（テスト用）
+            if (i < 9) {
+                const p = document.createElement('div');
+                p.className = 'piece opponent';
+                p.textContent = '歩';
+                cell.appendChild(p);
             }
-        });
-
-        Events.on(render, 'afterRender', () => {
-            const ctx = render.context;
-            engine.world.bodies.forEach(body => {
-                if (body.label === 'koma') {
-                    ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
-                    ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
-                    ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 14px "Noto Serif JP"'; ctx.textAlign = 'center';
-                    if (body.isGote) ctx.rotate(Math.PI);
-                    ctx.fillText(body.kanji, 0, 6); ctx.restore();
-                }
-            });
-        });
-
-        const pieces = [];
-        const backRow = ['香','桂','銀','金','玉','金','銀','桂','香'];
-        for(let i=0; i<9; i++) {
-            pieces.push(createKoma(i*56+28, 28, backRow[i], true));
-            pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
-            pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
-            pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
+            // 下部2列に自分の駒を配置
+            if (i > 71) {
+                const p = document.createElement('div');
+                p.className = 'piece';
+                p.textContent = '歩';
+                cell.appendChild(p);
+            }
+            
+            board.appendChild(cell);
         }
-        
-        // 修正：手前(先手) 8筋(右から2番目)に飛車、2筋(左から2番目)に角
-        pieces.push(createKoma(56*1+28, 56*7+28, '角', false)); 
-        pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
-        
-        // 修正：奥(後手) 2筋(左から2番目)に飛車、8筋(右から2番目)に角
-        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true)); 
-        pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
-
-        function createKoma(x, y, kanji, isGote) {
-            const b = Bodies.rectangle(x, y, 30, 40, { frictionAir: 0.2, restitution: 0.1 });
-            b.label = 'koma'; b.kanji = kanji; b.isGote = isGote;
-            return b;
-        }
-
-        World.add(engine.world, [...pieces, 
-            Bodies.rectangle(252, -20, 504, 40, { isStatic: true }),
-            Bodies.rectangle(252, 524, 504, 40, { isStatic: true }),
-            Bodies.rectangle(-20, 252, 40, 504, { isStatic: true }),
-            Bodies.rectangle(524, 252, 40, 504, { isStatic: true })
-        ]);
-
-        const mc = MouseConstraint.create(engine, { mouse: Mouse.create(render.canvas), constraint: { stiffness: 0.2, render: { visible: false } } });
-        World.add(engine.world, mc);
-        Render.run(render);
-        Runner.run(Runner.create(), engine);
-    }
-</script>
+    </script>
 </body>
 </html>

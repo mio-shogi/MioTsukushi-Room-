@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; }
+        body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow:hidden; }
         
         /* 表紙（結界） */
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
@@ -18,14 +18,14 @@
         #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; letter-spacing:0.2em; cursor:pointer; color:#1c1710; opacity:0.5; }
         #nav button.active { opacity:1; color:#b89530; }
 
-        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; overflow-y:auto; }
+        .room { display:none; padding-top:100px; height:100vh; width:100vw; flex-direction:column; align-items:center; overflow-y:auto; }
 
-        /* HOME：万葉集セクション */
+        /* HOME: 万葉集 */
         .poem-box { margin: 60px auto; text-align:center; max-width:650px; padding:40px; border-top:1px solid #b89530; }
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
         .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* SHOGI GAME：将棋盤 */
+        /* SHOGI: 盤面 */
         #shogi-layout { display:flex; align-items:center; gap:40px; margin-top: 20px; }
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
         .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
@@ -67,12 +67,11 @@
 
     <div id="medical" class="room">
         <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Room</h1>
-        <p style="margin-top:2rem; opacity:0.6;">Specialist in Cardiovascular Surgery / Emergency Medicine</p>
+        <p style="margin-top:2rem; opacity:0.6;">Specialist in Cardiovascular Surgery</p>
     </div>
 
     <div id="private" class="room">
         <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
-        <p style="margin-top:2rem; opacity:0.6;">A place for quiet reflection and aesthetics.</p>
     </div>
 
     <div id="shogi" class="room">
@@ -92,7 +91,7 @@
             document.getElementById('nav').style.display = 'flex';
             show('home');
             if(!timer) timer = setInterval(tick, 1000);
-        } else { alert('Incorrect Passphrase'); }
+        }
     }
 
     function show(id) {
@@ -105,13 +104,9 @@
 
     function tick() {
         if(!active) return;
-        if(times[active] > 0) {
-            times[active]--;
-        } else if(!isByo[active]) {
-            isByo[active] = true; times[active] = 30;
-        } else if(times[active] > 0) {
-            times[active]--;
-        }
+        if(times[active] > 0) times[active]--;
+        else if(!isByo[active]) { isByo[active] = true; times[active] = 30; }
+        else if(times[active] > 0) times[active]--;
         updateUI();
     }
 
@@ -133,7 +128,7 @@
         };
         for(let i=0; i<81; i++) {
             const x=i%9, y=Math.floor(i/9), cell=document.createElement('div');
-            cell.className='cell'; cell.dataset.pos=`${x}-${y}`;
+            cell.className='cell';
             cell.ondragover=e=>e.preventDefault();
             cell.ondrop=function(e){
                 e.preventDefault();

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mio Tsukushi Room</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -16,19 +15,28 @@
         #nav button { background:none; border:none; font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
         .room { display:none; position:fixed; inset:0; overflow-y:auto; padding:7rem 2rem 3rem; }
-        #shogi-container { position:relative; width:860px; height:600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-        .komadai-area { display: flex; flex-direction: column; align-items: center; position: absolute; }
-        .gote-side { left: 0; top: 0; }
-        .sente-side { right: 0; bottom: 0; }
-        .komadai { width:120px; height:200px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); }
+        
+        /* 将棋盤：CSSグリッドで線を確実に描画 */
+        #shogi-container { position:relative; width:900px; height:600px; margin: 0 auto; display: flex; justify-content: center; align-items: center; gap: 40px; }
+        .komadai-area { display: flex; flex-direction: column; align-items: center; }
+        .komadai { width:120px; height:200px; background: #e3c08d; border: 2px solid #5d4037; position: relative; }
         .shogi-clock { font-family:'Cormorant Garamond', serif; font-size:1.6rem; color:#b89530; background:#1c1710; padding:10px 20px; border-radius:4px; margin: 10px 0; border: 1px solid #b89530; min-width: 140px; text-align: center; }
         .active-turn { box-shadow: 0 0 20px rgba(184,149,48,0.6); border: 2px solid #fff; }
-        .byoyomi { color: #ff4500 !important; border-color: #ff4500 !important; }
-        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; position: relative; }
-        canvas { display: block; cursor: crosshair; }
-        .poem-container { margin-top: 4rem; max-width: 700px; margin: 4rem auto 0; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); text-align: center; }
+
+        #board { 
+            display: grid; grid-template-columns: repeat(9, 56px); grid-template-rows: repeat(9, 56px);
+            width: 504px; height: 504px; background: #d4a95a; border: 4px solid #5d4037;
+        }
+        .cell { border: 0.5px solid #2a1808; position: relative; display: flex; justify-content: center; align-items: center; }
+        .koma { 
+            width: 40px; height: 48px; background: #faecd5; border: 1.5px solid #7a5230; 
+            clip-path: polygon(50% 0%, 100% 25%, 85% 100%, 15% 100%, 0% 25%);
+            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem; cursor: grab; user-select: none;
+        }
+        .koma.gote { transform: rotate(180deg); }
+
+        .poem-container { margin: 4rem auto; max-width: 700px; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); text-align: center; }
         .poem-jp { font-size: 1.5rem; line-height: 2.5; font-family:'Noto Serif JP',serif; margin-bottom: 1.5rem; }
-        .poem-meta { font-size: 0.95rem; line-height: 1.8; opacity: 0.8; text-align: left; max-width: 500px; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -48,27 +56,21 @@
     <div id="home" class="room">
         <h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:3.5rem; margin-top: 5rem;">Sanctuary of enjoi</h2>
         <div class="poem-container">
-            <h3 style="font-family:'Cormorant Garamond',serif; margin-bottom:1.5rem; color:#b89530; letter-spacing:0.1em;">Mio-Tsukushi の由来</h3>
+            <h3 style="font-family:'Cormorant Garamond',serif; margin-bottom:1.5rem; color:#b89530;">Mio-Tsukushi の由来</h3>
             <p class="poem-jp">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <div class="poem-meta">
-                <p><strong>【万葉集 第十二巻:3162】</strong></p>
-                <p>意味: 私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
-            </div>
+            <p style="opacity:0.8; font-size:0.9rem; text-align:left; max-width:500px; margin:0 auto;">身を尽くし、心を尽くして想うからこそ、夢にまでその姿が現れる……万葉の時代の情熱をここに。</p>
         </div>
     </div>
 
-    <div id="medical" class="room"><h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Medical Room</h2></div>
-    <div id="private" class="room"><h2 style="text-align:center; font-family:'Cormorant Garamond',serif; font-size:2.5rem;">Private Room</h2></div>
-
     <div id="shogi" class="room">
         <div id="shogi-container">
-            <div class="komadai-area gote-side">
+            <div class="komadai-area">
                 <div class="komadai"></div>
                 <div id="clock-gote" class="shogi-clock">10:00</div>
                 <div style="font-size:0.8rem; color:#b89530;">GOTE</div>
             </div>
-            <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
-            <div class="komadai-area sente-side">
+            <div id="board"></div>
+            <div class="komadai-area">
                 <div style="font-size:0.8rem; color:#b89530;">SENTE</div>
                 <div id="clock-sente" class="shogi-clock">10:00</div>
                 <div class="komadai"></div>
@@ -76,133 +78,85 @@
         </div>
     </div>
 
+    <div id="medical" class="room"></div>
+    <div id="private" class="room"></div>
+
 <script>
-    let times = {sente: 600, gote: 600};
-    let isByo = {sente: false, gote: false};
-    let activeTurn = null;
+    let times = {sente: 600, gote: 600}, isByo = {sente: false, gote: false}, active = null;
 
     function checkPass() {
         if(document.getElementById('pass-input').value === 'enjoi') {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
             showRoom('home');
-            setInterval(() => {
-                if (!activeTurn) return;
-                if (times[activeTurn] > 0) {
-                    times[activeTurn]--;
-                } else if (!isByo[activeTurn]) {
-                    isByo[activeTurn] = true;
-                    times[activeTurn] = 30;
-                } else if (times[activeTurn] > 0) {
-                    times[activeTurn]--;
-                }
-                updateUI();
-            }, 1000);
+            setInterval(tick, 1000);
         } else { alert('Error'); }
     }
 
     function showRoom(id) {
         document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
         document.getElementById(id).style.display = (id === 'shogi') ? 'flex' : 'block';
-        document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-'+id).classList.add('active');
-        if (id === 'shogi') initShogi();
+        if(id === 'shogi') createBoard();
+    }
+
+    function tick() {
+        if (!active) return;
+        if (times[active] > 0) times[active]--;
+        else if (!isByo[active]) { isByo[active] = true; times[active] = 30; }
+        else if (times[active] > 0) times[active]--;
+        updateUI();
     }
 
     function updateUI() {
         ['sente', 'gote'].forEach(s => {
             const el = document.getElementById(`clock-${s}`);
-            if (isByo[s]) {
-                el.textContent = `Byoyomi:${times[s]}`;
-                el.classList.add('byoyomi');
-            } else {
-                const m = Math.floor(times[s]/60).toString().padStart(2,'0');
-                const sec = (times[s]%60).toString().padStart(2,'0');
-                el.textContent = `${m}:${sec}`;
-            }
-            el.classList.toggle('active-turn', activeTurn === s);
+            const m = Math.floor(times[s]/60).toString().padStart(2,'0'), sec = (times[s]%60).toString().padStart(2,'0');
+            el.textContent = isByo[s] ? `Byoyomi:${sec}` : `${m}:${sec}`;
+            el.classList.toggle('active-turn', active === s);
+            if (isByo[s]) el.style.color = '#ff4500';
         });
     }
 
-    let engine;
-    function initShogi() {
-        if (engine) return;
-        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
-        engine = Engine.create();
-        engine.world.gravity.y = 0;
-
-        const canvas = document.getElementById('shogiCanvas');
-        const render = Render.create({
-            canvas: canvas,
-            engine: engine,
-            options: { width: 504, height: 504, wireframes: false, background: 'transparent' }
-        });
-
-        Events.on(render, 'beforeRender', () => {
-            const ctx = render.context;
-            ctx.fillStyle = '#d4a95a'; ctx.fillRect(0,0,504,504);
-            ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 1;
-            for(let i=0; i<=9; i++) {
-                ctx.beginPath(); ctx.moveTo(i*56, 0); ctx.lineTo(i*56, 504); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i*56); ctx.lineTo(504, i*56); ctx.stroke();
-            }
-        });
-
-        Events.on(render, 'afterRender', () => {
-            const ctx = render.context;
-            engine.world.bodies.forEach(b => {
-                if (b.label === 'koma') {
-                    ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle);
-                    if (b.isGote) ctx.rotate(Math.PI);
-                    ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
-                    ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(18,-13); ctx.lineTo(15,22); ctx.lineTo(-15,22); ctx.lineTo(-18,-13); ctx.closePath();
-                    ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = '#2a1808'; ctx.font = 'bold 18px serif'; ctx.textAlign='center'; ctx.fillText(b.kanji, 0, 8);
-                    ctx.restore();
+    function createBoard() {
+        const b = document.getElementById('board');
+        if (b.children.length > 0) return;
+        const initial = {
+            '0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香',
+            '1-1':'飛','7-1':'角','0-2':'歩','1-2':'歩','2-2':'歩','3-2':'歩','4-2':'歩','5-2':'歩','6-2':'歩','7-2':'歩','8-2':'歩',
+            '0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香',
+            '1-7':'角','7-7':'飛','0-6':'歩','1-6':'歩','2-6':'歩','3-6':'歩','4-6':'歩','5-6':'歩','6-6':'歩','7-6':'歩','8-6':'歩'
+        };
+        for(let y=0; y<9; y++) {
+            for(let x=0; x<9; x++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.pos = `${x}-${y}`;
+                cell.ondragover = e => e.preventDefault();
+                cell.ondrop = drop;
+                const k = initial[`${x}-${y}`];
+                if(k) {
+                    const pc = document.createElement('div');
+                    pc.className = 'koma' + (y < 3 ? ' gote' : '');
+                    pc.textContent = k;
+                    pc.draggable = true;
+                    pc.dataset.side = (y < 3 ? 'gote' : 'sente');
+                    pc.ondragstart = e => { e.dataTransfer.setData('text', e.target.parentElement.dataset.pos); };
+                    cell.appendChild(pc);
                 }
-            });
-        });
-
-        const pieces = [];
-        const rows = ['香','桂','銀','金','玉','金','銀','桂','香'];
-        for(let i=0; i<9; i++){
-            pieces.push(createKoma(i*56+28, 28, rows[i], true));
-            pieces.push(createKoma(i*56+28, 56*8+28, rows[i]==='玉'?'王':rows[i], false));
-            pieces.push(createKoma(i*56+28, 56*2+28, '歩', true));
-            pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
-        }
-        pieces.push(createKoma(56*1+28, 56*1+28, '飛', true));
-        pieces.push(createKoma(56*7+28, 56*1+28, '角', true));
-        pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
-        pieces.push(createKoma(56*1+28, 56*7+28, '角', false));
-
-        function createKoma(x, y, k, g) {
-            const b = Bodies.rectangle(x, y, 38, 48, { frictionAir: 0.2, restitution: 0.1 });
-            b.label = 'koma'; b.kanji = k; b.isGote = g; return b;
-        }
-
-        const mouse = Mouse.create(render.canvas);
-        const mc = MouseConstraint.create(engine, {
-            mouse: mouse,
-            constraint: { stiffness: 0.1, render: { visible: false } }
-        });
-
-        Events.on(mc, 'enddrag', (e) => {
-            if (e.body && e.body.label === 'koma') {
-                if (activeTurn && isByo[activeTurn]) times[activeTurn] = 30;
-                activeTurn = e.body.isGote ? 'sente' : 'gote';
+                b.appendChild(cell);
             }
-        });
+        }
+    }
 
-        World.add(engine.world, [...pieces, mc, 
-            Bodies.rectangle(252, -25, 504, 50, { isStatic: true }),
-            Bodies.rectangle(252, 529, 504, 50, { isStatic: true }),
-            Bodies.rectangle(-25, 252, 50, 504, { isStatic: true }),
-            Bodies.rectangle(529, 252, 50, 504, { isStatic: true })
-        ]);
-
-        Render.run(render);
-        Runner.run(Runner.create(), engine);
+    function drop(e) {
+        e.preventDefault();
+        const fromPos = e.dataTransfer.getData('text');
+        const fromCell = document.querySelector(`[data-pos="${fromPos}"]`);
+        const koma = fromCell.firstChild;
+        const toCell = e.target.className === 'cell' ? e.target : e.target.parentElement;
+        if (toCell.firstChild && toCell !== fromCell) toCell.removeChild(toCell.firstChild);
+        toCell.appendChild(koma);
+        active = koma.dataset.side === 'gote' ? 'sente' : 'gote';
     }
 </script>
 </body>

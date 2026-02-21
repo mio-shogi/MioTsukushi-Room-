@@ -8,37 +8,32 @@
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; }
         
+        /* 認証 */
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        
+        /* ナビ */
         #nav { position:fixed; top:0; width:100%; display:none; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; transition: 0.3s; }
         #nav button.active { opacity:1; color:#b89530; }
 
         .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; padding-bottom: 60px; }
 
-        /* HOME */
-        .poem-box { margin: 60px auto; text-align:center; max-width:800px; padding:40px; border-top:1px solid #b89530; }
-        .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
-
-        /* 写真：豆粒にならないよう、最大幅を大きくし、高さも自動に */
+        /* 写真：画面の幅に合わせて適切に表示（壊さないためのシンプルな記述） */
         .illustration-box {
-            width: 95%; /* 画面のほとんどを使う */
-            max-width: 1000px; /* 1000ピクセルまで大きく許可 */
+            width: 85%;
+            max-width: 800px; 
             margin: 30px auto;
             border-radius: 4px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            line-height: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
-        .illustration-box img { 
-            width: 100%; /* 横幅いっぱい */
-            height: auto; /* 高さは自動（潰さない） */
-            display: block;
-        }
+        .illustration-box img { width: 100%; height: auto; display: block; }
 
-        /* 文学的装飾 */
-        .prose-excerpt { max-width: 800px; margin-top: 40px; padding: 0 20px; font-size: 1.15rem; line-height: 2.3; text-align: justify; }
-        .prose-meta { margin-top: 20px; font-size: 1rem; opacity: 0.7; text-align: right; width: 100%; max-width: 800px; padding-right: 20px; }
+        /* 文章 */
+        .content-text { max-width: 700px; line-height: 2.2; text-align: center; padding: 0 20px; margin-top: 20px; }
+        .poem-box { margin: 60px auto; text-align:center; max-width:650px; padding:40px; border-top:1px solid #b89530; }
+        .prose-excerpt { max-width: 700px; margin-top: 40px; padding: 0 20px; font-size: 1.05rem; line-height: 2.3; text-align: justify; }
 
-        /* 将棋 */
+        /* 将棋盤：以前の安定していた設定に戻します */
         #shogi { background: #96a996; } 
         #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(255,255,255,0.25); border-radius: 15px; }
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
@@ -46,7 +41,6 @@
         .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
         .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; text-align: center;}
         #clock-gote { transform: rotate(180deg); }
-        .active-turn { border-color:#fff; color:#fff; box-shadow: 0 0 15px rgba(184,149,48,0.6); }
 
         .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; cursor:grab; font-weight:bold; font-size:1.1rem; user-select:none; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
         .gote { transform: rotate(180deg); }
@@ -61,12 +55,6 @@
         <input type="password" id="pass-input" placeholder="Passphrase" style="padding:10px; margin-top:20px; text-align:center;" onkeydown="if(event.key==='Enter') unlock()">
     </div>
 
-    <div id="nari-dialog">
-        <p style="margin-bottom: 15px;">駒を成りますか？</p>
-        <button id="nari-yes">成る</button>
-        <button id="nari-no">成らず</button>
-    </div>
-
     <nav id="nav">
         <button id="btn-home" onclick="show('home')">HOME</button>
         <button id="btn-medical" onclick="show('medical')">MEDICAL ROOM</button>
@@ -77,7 +65,7 @@
     <div id="home" class="room">
         <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Sanctuary of enjoi</h1>
         <div class="poem-box">
-            <p class="poem-text">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <p style="font-size:1.6rem; line-height:2.8;">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
         </div>
     </div>
 
@@ -86,7 +74,7 @@
         <div class="illustration-box">
             <img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg" alt="Medical Hands">
         </div>
-        <div style="max-width:800px; line-height:2.2; text-align:center; padding: 20px;">
+        <div class="content-text">
             <p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と、命を繋ぐ意志だけが、この静かな聖域を満たしている。</p>
         </div>
     </div>
@@ -98,24 +86,21 @@
         </div>
         <div class="prose-excerpt">
             <p>「その昔、コンブレーでは、マドレーヌを紅茶に浸すと、その一口ごとに、私が幼い頃に経験した過去の出来事すべてが、私を包み込む記憶の泡として立ち上ってきたのだった。」</p>
+            <p style="text-align:right; margin-top:20px; opacity:0.7;">— マルセル・プルースト</p>
         </div>
-        <p class="prose-meta">— マルセル・プルースト 『失われた時を求めて』より</p>
     </div>
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div style="text-align:center;">
-                <div class="komadai" id="kd-g"></div>
-                <div id="clock-gote" class="clock">10:00</div>
-                <p style="color:#b89530; transform: rotate(180deg);">GOTE</p>
-            </div>
+            <div style="text-align:center;"><div class="komadai" id="kd-g"></div><div id="clock-gote" class="clock">10:00</div></div>
             <div id="board"></div>
-            <div style="text-align:center;">
-                <p style="color:#b89530;">SENTE</p>
-                <div id="clock-sente" class="clock">10:00</div>
-                <div class="komadai" id="kd-s"></div>
-            </div>
+            <div style="text-align:center;"><div id="clock-sente" class="clock">10:00</div><div class="komadai" id="kd-s"></div></div>
         </div>
+    </div>
+
+    <div id="nari-dialog">
+        <p>駒を成りますか？</p>
+        <button id="nari-yes">成る</button><button id="nari-no">成らず</button>
     </div>
 
 <script>
@@ -133,8 +118,7 @@
     function show(id) {
         document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
         document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
-        const target = document.getElementById(id);
-        target.style.display = 'flex';
+        document.getElementById(id).style.display = 'flex';
         document.getElementById('btn-' + id).classList.add('active');
         if(id === 'shogi') init();
     }
@@ -150,6 +134,8 @@
 
     function init() {
         const b = document.getElementById('board'); if(b.children.length > 0) return;
+        const L = {'0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香','1-1':'飛','7-1':'角',
+                   '0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香','1-7':'角','7-7':'飛'};
         for(let i=0; i<81; i++) {
             const x=i%9, y=Math.floor(i/9), c=document.createElement('div');
             c.className='cell'; c.dataset.y = y;
@@ -159,7 +145,7 @@
                 const p = document.getElementById(id);
                 if(p) { this.appendChild(p); active = p.dataset.s==='gote' ? 'sente' : 'gote'; }
             });
-            const k = (y===2||y===6)?'歩':null;
+            const k = L[`${x}-${y}`] || (y===2||y===6?'歩':null);
             if(k){
                 const p=document.createElement('div'); p.id='pk-'+i; p.className='koma'+(y<3?' gote':'');
                 p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente';

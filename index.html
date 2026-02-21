@@ -19,8 +19,6 @@
         #nav button { background:none; border:none; border-right:1px solid rgba(28,23,16,.07); font-family:'Cormorant Garamond', serif; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase; color:#1c1710; opacity:.48; cursor:pointer; padding:1.05rem 1.85rem; }
         #nav button.active { opacity:1; color:#b89530; }
         
-        /* 時計のデザイン（将棋部屋用と共用） */
-        .digital-clock-small { font-family:'Cormorant Garamond', serif; font-size:0.9rem; color:#b89530; margin-bottom: 5px; text-align: center; letter-spacing: 0.1em; }
         #clock { position:fixed; bottom:1.5rem; right:1.8rem; z-index:500; text-align:right; pointer-events:none; display:none; }
         #clock-t { font-family:'Cormorant Garamond',serif; font-size:1.2rem; letter-spacing:0.15em; color:#1c1710; opacity:0.5; }
 
@@ -28,19 +26,33 @@
         .room.active { display:block; animation:fadeIn 0.8s ease both; }
         @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
         
-        /* 万葉集セクションの装飾 */
+        /* 万葉集セクション */
         .poem-container { margin-top: 4rem; max-width: 700px; margin-left: auto; margin-right: auto; padding: 2rem; border-top: 1px solid rgba(184,149,48,.2); }
         .poem-jp { font-size: 1.4rem; line-height: 2.5; margin-bottom: 1.5rem; }
         .poem-meta { font-size: 0.9rem; opacity: 0.7; text-align: left; line-height: 1.8; }
 
+        /* 将棋レイアウト：対角線の配置 */
         #shogi { background:#f7f2e9; flex-direction:column; align-items:center; }
-        #shogi-layout { display:flex; align-items:flex-end; gap:40px; margin-top: 20px; justify-content:center; }
-        .komadai-wrap { display: flex; flex-direction: column; align-items: center; }
-        .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); padding: 12px; }
-        #board-wrap { position:relative; width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
-        #shogiCanvas { position:absolute; top:0; left:0; width:100%; height:100%; }
+        #shogi-layout { 
+            position: relative;
+            width: 780px; /* 駒台＋盤面＋駒台の幅 */
+            height: 600px; 
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .komadai-set { display: flex; flex-direction: column; align-items: center; position: absolute; }
+        .gote-side { left: 0; top: 0; }  /* 左上（後手） */
+        .sente-side { right: 0; bottom: 0; } /* 右下（先手） */
+
+        .komadai { width:110px; min-height:180px; background: #e3c08d; border: 2px solid #5d4037; box-shadow: 4px 4px 15px rgba(0,0,0,0.1); }
+        .digital-clock-small { font-family:'Cormorant Garamond', serif; font-size:1.1rem; color:#b89530; background:#1c1710; padding:4px 12px; border-radius:3px; margin: 8px 0; letter-spacing: 0.1em; }
+
+        #board-wrap { width:504px; height:504px; background:#d4a95a; border:4px solid #5d4037; box-shadow:0 12px 35px rgba(0,0,0,0.2); overflow:hidden; }
+        #shogiCanvas { width:100%; height:100%; }
         
-        /* 画像・文章スペース */
         .content-placeholder { margin: 3rem auto; max-width: 800px; border: 1px dashed rgba(184,149,48,.3); padding: 2rem; text-align: center; color: rgba(28,23,16,.4); }
     </style>
 </head>
@@ -90,12 +102,14 @@
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div class="komadai-wrap">
-                <div class="digital-clock-small clock-sync">00:00:00</div>
+            <div class="komadai-set gote-side">
                 <div class="komadai"></div>
+                <div class="digital-clock-small clock-sync">00:00:00</div>
             </div>
+
             <div id="board-wrap"><canvas id="shogiCanvas"></canvas></div>
-            <div class="komadai-wrap">
+
+            <div class="komadai-set sente-side">
                 <div class="digital-clock-small clock-sync">00:00:00</div>
                 <div class="komadai"></div>
             </div>
@@ -138,7 +152,6 @@
         const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
         engine = Engine.create();
         engine.world.gravity.y = 0; 
-
         const canvas = document.getElementById('shogiCanvas');
         render = Render.create({ canvas, engine, options: { width: 504, height: 504, wireframes: false, background: 'transparent' } });
 
@@ -156,22 +169,12 @@
             const ctx = render.context;
             engine.world.bodies.forEach(body => {
                 if (body.label === 'koma') {
-                    ctx.save(); 
-                    ctx.translate(body.position.x, body.position.y); 
-                    ctx.rotate(body.angle);
-                    
-                    // 相手の駒(後手)の場合は、形を描画する前に180度回転
+                    ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                     if (body.isGote) { ctx.rotate(Math.PI); }
-
                     ctx.fillStyle = '#faecd5'; ctx.strokeStyle = '#7a5230'; ctx.lineWidth = 1.5;
-                    ctx.beginPath(); 
-                    // 駒の形（五角形）を尖った方が上に向くように描画
-                    ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); 
-                    ctx.closePath();
+                    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(16, -12); ctx.lineTo(14, 20); ctx.lineTo(-14, 20); ctx.lineTo(-16, -12); ctx.closePath();
                     ctx.fill(); ctx.stroke();
-
                     ctx.fillStyle = '#2a1808'; ctx.font = 'bold 16px "Noto Serif JP"'; ctx.textAlign = 'center';
-                    // 文字を配置
                     ctx.fillText(body.kanji, 0, 7); 
                     ctx.restore();
                 }
@@ -186,7 +189,6 @@
             pieces.push(createKoma(i*56+28, 56*8+28, backRow[i] === '玉' ? '王' : backRow[i], false));
             pieces.push(createKoma(i*56+28, 56*6+28, '歩', false));
         }
-        
         pieces.push(createKoma(56*1+28, 56*7+28, '角', false)); 
         pieces.push(createKoma(56*7+28, 56*7+28, '飛', false));
         pieces.push(createKoma(56*1+28, 56*1+28, '飛', true)); 

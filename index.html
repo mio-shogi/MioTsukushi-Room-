@@ -20,14 +20,12 @@
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
         .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* MEDICAL ROOM: 絶対パスによる確実な画像表示 */
-        #medical { background: #dce4eb; color: #2c3e50; }
+        /* MEDICAL ROOM: 写真の上に色を乗せない「単層」設計 */
+        #medical { background: transparent; color: #2c3e50; }
         #medical-bg {
             position: absolute; inset: 0;
-            /* フルURLで指定することで迷子を回避 */
-            background-image: url('https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg'); 
-            background-size: cover; background-position: center;
-            opacity: 0.45; filter: blur(4px); z-index: 0;
+            background: #dce4eb url('https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg') no-repeat center/cover;
+            filter: blur(4px); z-index: -1;
         }
         #medical .content { z-index: 1; text-align: center; margin-top: 40px; }
 

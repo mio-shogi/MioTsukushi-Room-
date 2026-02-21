@@ -7,87 +7,77 @@
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; }
-        
-        /* 認証 */
         #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        
-        /* ナビ */
         #nav { position:fixed; top:0; width:100%; display:none; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
         #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; transition: 0.3s; }
         #nav button.active { opacity:1; color:#b89530; }
+        .room { display:none; padding-top:80px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; padding-bottom: 40px; overflow-y: auto; }
 
-        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; padding-bottom: 60px; }
-
-        /* 写真：画面の幅に合わせて適切に表示（壊さないためのシンプルな記述） */
-        .illustration-box {
-            width: 85%;
-            max-width: 800px; 
-            margin: 30px auto;
-            border-radius: 4px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        /* 写真：言葉を押し出さないよう、高さをさらに抑えます(35vh) */
+        .illustration-box { 
+            width: auto; 
+            max-width: 80%; 
+            margin: 15px auto; 
+            border-radius: 2px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
         }
-        .illustration-box img { width: 100%; height: auto; display: block; }
+        .illustration-box img { 
+            max-height: 35vh; /* 画面の約3分の1に収めます */
+            width: auto; 
+            max-width: 100%;
+            display: block; 
+            margin: 0 auto;
+        }
 
-        /* 文章 */
-        .content-text { max-width: 700px; line-height: 2.2; text-align: center; padding: 0 20px; margin-top: 20px; }
-        .poem-box { margin: 60px auto; text-align:center; max-width:650px; padding:40px; border-top:1px solid #b89530; }
-        .prose-excerpt { max-width: 700px; margin-top: 40px; padding: 0 20px; font-size: 1.05rem; line-height: 2.3; text-align: justify; }
+        .content-text { max-width: 600px; line-height: 1.8; text-align: center; padding: 0 20px; margin-top: 10px; font-size: 0.9rem; }
+        .poem-box { margin: 30px auto; text-align:center; max-width:600px; padding:20px; border-top:1px solid #b89530; }
+        .prose-excerpt { max-width: 600px; margin-top: 15px; padding: 0 20px; font-size: 0.95rem; line-height: 1.9; text-align: justify; }
 
-        /* 将棋盤：以前の安定していた設定に戻します */
+        /* 将棋 */
         #shogi { background: #96a996; } 
-        #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(255,255,255,0.25); border-radius: 15px; }
-        #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
-        .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
-        .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
-        .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; text-align: center;}
+        #shogi-layout { display:flex; align-items:center; gap:20px; padding: 20px; background: rgba(255,255,255,0.25); border-radius: 15px; transform: scale(0.85); }
+        #board { display: grid; grid-template-columns: repeat(9, 48px); grid-template-rows: repeat(9, 48px); background:#d4a95a; border:3px solid #5d4037; }
+        .cell { width: 48px; height: 48px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
+        .komadai { width:90px; height:160px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
+        .clock { font-family:'Cormorant Garamond', serif; font-size:1.4rem; background:#1c1710; color:#b89530; padding:6px; min-width:100px; border:1px solid #b89530; margin-bottom: 6px; text-align: center;}
         #clock-gote { transform: rotate(180deg); }
-
-        .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; cursor:grab; font-weight:bold; font-size:1.1rem; user-select:none; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
+        .koma { width:38px; height:42px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; cursor:grab; font-weight:bold; font-size:0.95rem; user-select:none; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
         .gote { transform: rotate(180deg); }
-        .nari-piece { color: #c0392b; }
-        #nari-dialog { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(247,242,233,0.98); padding:2rem; border:1px solid #b89530; display:none; z-index:5000; text-align:center; }
     </style>
 </head>
 <body>
-
     <div id="lock-screen">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Mio Tsukushi Room</h1>
-        <input type="password" id="pass-input" placeholder="Passphrase" style="padding:10px; margin-top:20px; text-align:center;" onkeydown="if(event.key==='Enter') unlock()">
+        <h1 style="font-family:'Cormorant Garamond'; font-size:2.8rem;">Mio Tsukushi Room</h1>
+        <input type="password" id="pass-input" placeholder="Passphrase" style="padding:10px; text-align:center;" onkeydown="if(event.key==='Enter') unlock()">
     </div>
-
     <nav id="nav">
-        <button id="btn-home" onclick="show('home')">HOME</button>
-        <button id="btn-medical" onclick="show('medical')">MEDICAL ROOM</button>
-        <button id="btn-private" onclick="show('private')">PRIVATE</button>
-        <button id="btn-shogi" onclick="show('shogi')">SHOGI GAME</button>
+        <button onclick="show('home')">HOME</button>
+        <button onclick="show('medical')">MEDICAL ROOM</button>
+        <button onclick="show('private')">PRIVATE</button>
+        <button onclick="show('shogi')">SHOGI GAME</button>
     </nav>
 
     <div id="home" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Sanctuary of enjoi</h1>
+        <h1 style="font-family:'Cormorant Garamond'; font-size:2.8rem;">Sanctuary of enjoi</h1>
         <div class="poem-box">
-            <p style="font-size:1.6rem; line-height:2.8;">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <p style="font-size:1.4rem; line-height:2.4;">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
+            <div style="margin-top:20px; text-align:left; font-size:0.85rem; border-top:1px solid rgba(184,149,48,0.3); padding-top:15px; opacity:0.8;">
+                <p><strong>【万葉集 第十二巻：3162】</strong></p>
+                <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
+            </div>
         </div>
     </div>
 
     <div id="medical" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Room</h1>
-        <div class="illustration-box">
-            <img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg" alt="Medical Hands">
-        </div>
-        <div class="content-text">
-            <p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と、命を繋ぐ意志だけが、この静かな聖域を満たしている。</p>
-        </div>
+        <h1 style="font-family:'Cormorant Garamond'; font-size:2.2rem;">Medical Room</h1>
+        <div class="illustration-box"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg"></div>
+        <div class="content-text"><p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と意志だけが、この静かな聖域を満たしている。</p></div>
     </div>
 
     <div id="private" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
-        <div class="illustration-box">
-            <img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg" alt="Antique Library">
-        </div>
-        <div class="prose-excerpt">
-            <p>「その昔、コンブレーでは、マドレーヌを紅茶に浸すと、その一口ごとに、私が幼い頃に経験した過去の出来事すべてが、私を包み込む記憶の泡として立ち上ってきたのだった。」</p>
-            <p style="text-align:right; margin-top:20px; opacity:0.7;">— マルセル・プルースト</p>
-        </div>
+        <h1 style="font-family:'Cormorant Garamond'; font-size:2.2rem;">Private Room</h1>
+        <div class="illustration-box"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg"></div>
+        <div class="prose-excerpt"><p>「マドレーヌを紅茶に浸すと、一口ごとに、過去の出来事すべてが、記憶の泡として立ち上ってきたのだった。」<br><br>— マルセル・プルースト</p></div>
     </div>
 
     <div id="shogi" class="room">
@@ -98,60 +88,20 @@
         </div>
     </div>
 
-    <div id="nari-dialog">
-        <p>駒を成りますか？</p>
-        <button id="nari-yes">成る</button><button id="nari-no">成らず</button>
-    </div>
-
 <script>
-    let times = {sente:600, gote:600}, active = null, pendingKoma = null;
-    const nariMap = {'歩':'と','角':'馬','飛':'龍','銀':'全','桂':'圭','香':'杏'};
-
-    function unlock() {
-        if(document.getElementById('pass-input').value === 'enjoi') {
-            document.getElementById('lock-screen').style.display = 'none';
-            document.getElementById('nav').style.display = 'flex';
-            show('home'); setInterval(tick, 1000);
-        }
-    }
-
-    function show(id) {
-        document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
-        document.querySelectorAll('#nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).style.display = 'flex';
-        document.getElementById('btn-' + id).classList.add('active');
-        if(id === 'shogi') init();
-    }
-
-    function tick() {
-        if(!active) return;
-        if(times[active] > 0) times[active]--;
-        ['sente','gote'].forEach(s => {
-            const el = document.getElementById(`clock-${s}`);
-            if(el) el.textContent = `${Math.floor(times[s]/60)}:${(times[s]%60).toString().padStart(2,'0')}`;
-        });
-    }
-
+    let times = {sente:600, gote:600}, active = null;
+    function unlock() { if(document.getElementById('pass-input').value==='enjoi'){document.getElementById('lock-screen').style.display='none';document.getElementById('nav').style.display='flex';show('home');setInterval(tick,1000);} }
+    function show(id) { document.querySelectorAll('.room').forEach(r=>r.style.display='none'); document.getElementById(id).style.display='flex'; if(id==='shogi')init(); }
+    function tick() { if(active) { times[active]--; ['sente','gote'].forEach(s=>{ const el=document.getElementById(`clock-${s}`); el.textContent=`${Math.floor(times[s]/60)}:${(times[s]%60).toString().padStart(2,'0')}`; }); } }
     function init() {
-        const b = document.getElementById('board'); if(b.children.length > 0) return;
-        const L = {'0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香','1-1':'飛','7-1':'角',
-                   '0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香','1-7':'角','7-7':'飛'};
-        for(let i=0; i<81; i++) {
-            const x=i%9, y=Math.floor(i/9), c=document.createElement('div');
-            c.className='cell'; c.dataset.y = y;
-            c.addEventListener('dragover', e => e.preventDefault());
-            c.addEventListener('drop', function(e) {
-                const id = e.dataTransfer.getData('text');
-                const p = document.getElementById(id);
-                if(p) { this.appendChild(p); active = p.dataset.s==='gote' ? 'sente' : 'gote'; }
-            });
-            const k = L[`${x}-${y}`] || (y===2||y===6?'歩':null);
-            if(k){
-                const p=document.createElement('div'); p.id='pk-'+i; p.className='koma'+(y<3?' gote':'');
-                p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente';
-                p.addEventListener('dragstart', e => e.dataTransfer.setData('text', e.target.id));
-                c.appendChild(p);
-            }
+        const b=document.getElementById('board'); if(b.children.length>0)return;
+        const L={'0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香','1-1':'飛','7-1':'角','0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香','1-7':'角','7-7':'飛'};
+        for(let i=0;i<81;i++){
+            const x=i%9,y=Math.floor(i/9),c=document.createElement('div'); c.className='cell';
+            const k=L[`${x}-${y}`]||(y===2||y===6?'歩':null);
+            if(k){ const p=document.createElement('div'); p.id='p'+i; p.className='koma'+(y<3?' gote':''); p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente'; p.addEventListener('dragstart',e=>e.dataTransfer.setData('text',e.target.id)); c.appendChild(p); }
+            c.addEventListener('dragover',e=>e.preventDefault());
+            c.addEventListener('drop',function(e){ const p=document.getElementById(e.dataTransfer.getData('text')); this.appendChild(p); active=p.dataset.s==='gote'?'sente':'gote'; });
             b.appendChild(c);
         }
     }

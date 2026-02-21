@@ -20,13 +20,26 @@
         .poem-text { font-size:1.6rem; line-height:2.8; margin-bottom:30px; }
         .poem-meta { opacity:0.8; font-size:0.95rem; text-align:left; line-height:1.8; }
 
-        /* MEDICAL & PRIVATE: 写真スタイル */
+        /* MEDICAL & PRIVATE: 写真スタイル (共通) */
         .illustration-box {
             width: 550px; margin: 40px auto; overflow: hidden; border-radius: 4px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.08); transition: all 0.8s; cursor: pointer;
         }
         .illustration-box img { width: 100%; height: auto; }
         .illustration-box:hover { transform: translateY(-10px); box-shadow: 0 25px 60px rgba(184,149,48,0.25); }
+
+        /* PRIVATE ROOM 専用スタイル */
+        #private .illustration-box {
+            background: #dcd7ca; /* 書斎の背景色 */
+        }
+        #private .prose-excerpt {
+            max-width: 650px; margin-top: 50px; padding: 0 20px;
+            font-size: 1.05rem; line-height: 2.1; text-align: justify;
+            opacity: 0.85; border-top: 1px solid rgba(184,149,48,.3); padding-top: 30px;
+        }
+        #private .prose-meta {
+            margin-top: 20px; font-size: 0.9rem; opacity: 0.7; text-align: right; width: 100%; max-width: 650px; padding-right: 20px;
+        }
 
         /* SHOGI */
         #shogi { background: #96a996; } 
@@ -35,7 +48,6 @@
         .cell { width:54px; height:54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
         .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
         
-        /* 時計のスタイル */
         .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; transition: 0.3s; text-align: center;}
         #clock-gote { transform: rotate(180deg); } /* 後手用時計を180度回転 */
         .active-turn { border-color:#fff; color:#fff; box-shadow: 0 0 15px rgba(184,149,48,0.6); }
@@ -97,9 +109,13 @@
 
     <div id="private" class="room">
         <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
-        <div class="illustration-box" style="background: rgba(184,149,48,0.1); height: 300px; display: flex; align-items:center; justify-content:center;">
-             <p style="opacity:0.4;">(Coming Soon: French Literature)</p>
+        <div class="illustration-box">
+            <img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg" alt="Antique Library with French Literature">
         </div>
+        <div class="prose-excerpt">
+            <p>「その昔、コンブレーでは、マドレーヌを紅茶に浸すと、その一口ごとに、私が幼い頃に経験した過去の出来事すべて、家や庭の色彩、町の道々、花々、庭のあずまや、それらのすべてが、私を包み込む記憶の泡として立ち上ってきたのだった。」</p>
+        </div>
+        <p class="prose-meta">— マルセル・プルースト 『失われた時を求めて』より</p>
     </div>
 
     <div id="shogi" class="room">
@@ -111,7 +127,7 @@
             </div>
             <div id="board"></div>
             <div style="text-align:center;">
-                <p style="color:#b89530; font-family:'Cormorant Garamond';">SENTE</p>
+                <p style="color:#b89230; font-family:'Cormorant Garamond';">SENTE</p>
                 <div id="clock-sente" class="clock">10:00</div>
                 <div class="komadai" id="kd-s"></div>
             </div>
@@ -167,33 +183,4 @@
                 checkNari(p, parseInt(this.dataset.y));
                 active = p.dataset.s==='gote' ? 'sente' : 'gote';
             });
-            const k = L[`${x}-${y}`] || (y===2||y===6?'歩':null);
-            if(k){
-                const p=document.createElement('div'); p.id='pk-'+i; p.className='koma'+(y<3?' gote':'');
-                p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente';
-                p.addEventListener('dragstart', e => e.dataTransfer.setData('text', e.target.id));
-                c.appendChild(p);
-            }
-            b.appendChild(c);
-        }
-    }
-
-    function checkNari(p, y) {
-        const canNari = (p.dataset.s==='sente' && y<=2) || (p.dataset.s==='gote' && y>=6);
-        if(canNari && nariMap[p.textContent] && !p.classList.contains('nari-piece')) {
-            pendingKoma = p;
-            document.getElementById('nari-dialog').style.display = 'block';
-        }
-    }
-
-    document.getElementById('nari-yes').onclick = () => {
-        pendingKoma.textContent = nariMap[pendingKoma.textContent];
-        pendingKoma.classList.add('nari-piece');
-        document.getElementById('nari-dialog').style.display = 'none';
-    };
-    document.getElementById('nari-no').onclick = () => {
-        document.getElementById('nari-dialog').style.display = 'none';
-    };
-</script>
-</body>
-</html>
+            const k = L[`

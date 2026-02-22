@@ -9,28 +9,24 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Times New Roman', serif, "Hiragino Mincho ProN", "MS Mincho";
-            background-color: #fcfaf5; /* 柔らかな和紙のような白 */
+            font-family: "Helvetica Neue", Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fcfaf5;
             color: #4a4a4a;
             overflow: hidden;
         }
 
-        /* 万葉の花の背景：下部からそっと咲きこぼれる */
-        .flower-background {
+        /* 万葉の華：さらに淡く、境界線をなくして「気配」だけに */
+        .flower-layer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 60%; /* 下半分に配置 */
-            background-image: 
-                url('https://www.transparenttextures.com/patterns/paper-fibers.png'), /* 紙の質感 */
-                linear-gradient(to top, rgba(252,250,245,0) 70%, rgba(252,250,245,1) 100%),
-                url('https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=1000'); /* 撫子と萩をイメージした淡い水彩 */
-            background-size: cover;
-            background-position: bottom center;
-            opacity: 0.2; /* 極めて薄く、背景に溶け込ませる */
+            height: 40%;
+            background: 
+                radial-gradient(circle at 20% 110%, rgba(243, 225, 225, 0.4) 0%, transparent 60%),
+                radial-gradient(circle at 80% 110%, rgba(225, 227, 243, 0.4) 0%, transparent 60%);
+            filter: blur(50px);
             z-index: -1;
-            pointer-events: none;
         }
 
         #entrance {
@@ -40,122 +36,108 @@
             align-items: center;
             height: 100vh;
             text-align: center;
-            transition: opacity 1.5s ease-in-out;
         }
 
         h1 {
-            font-weight: normal;
-            font-size: 2.2rem;
-            letter-spacing: 0.3rem;
-            margin-bottom: 2rem;
-            color: #8c7171; /* 落ち着いた撫子色 */
+            font-weight: 200;
+            font-size: 1.6rem;
+            letter-spacing: 0.6rem;
+            margin-bottom: 4rem;
+            color: #8c7171;
         }
 
+        .poem-area {
+            margin-bottom: 4rem;
+            max-width: 600px;
+        }
+
+        /* 横書きに変更：一行を長く取らず、呼吸するように置く */
         .poem {
-            font-size: 1.1rem;
-            line-height: 2.5;
-            margin-bottom: 3rem;
-            writing-mode: vertical-rl; /* 万葉集らしく縦書きで */
-            height: 200px;
-            display: inline-block;
-            text-orientation: upright;
+            font-size: 1rem;
+            line-height: 3;
             letter-spacing: 0.2rem;
+            color: #666;
+            font-feature-settings: "palt"; /* 文字詰めをして美しく */
         }
 
         input[type="password"] {
             background: transparent;
             border: none;
-            border-bottom: 1px solid #d1c1c1;
+            border-bottom: 1px solid #e0d0d0;
             padding: 10px;
-            width: 200px;
+            width: 180px;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
             outline: none;
             color: #8c7171;
+            letter-spacing: 0.4rem;
         }
 
-        /* お部屋のレイアウト */
         #main-room {
             display: none;
-            padding: 50px;
+            padding: 40px;
             height: 100vh;
             box-sizing: border-box;
-            background: #fdfcf9;
+            background: #fffdfa;
         }
 
         .room-container {
             display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            gap: 30px;
-            height: 80%;
+            justify-content: center;
+            gap: 60px;
+            height: 85%;
+            opacity: 0;
+            transition: opacity 2s ease;
         }
 
         .room-card {
             flex: 1;
+            max-width: 450px;
             text-align: center;
         }
 
-        .room-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            color: #6d5f5f;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+        .room-title {
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            color: #9d8b8b;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
         }
 
         .room-image {
             width: 100%;
-            height: 450px;
+            height: auto;
+            max-height: 500px;
             object-fit: cover;
-            border-radius: 2px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 柔らかな影で額装 */
-            background-color: #fff;
-        }
-
-        /* 将棋盤の簡易表現 */
-        .shogi-board {
-            width: 100%;
-            height: 450px;
-            background-color: #f3e5ab; /* 榧の木の色 */
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            border: 2px solid #5d4037;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.03);
+            border: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="flower-background"></div>
+    <div class="flower-layer"></div>
 
     <div id="entrance">
         <h1>Mio Tsukushi - Room</h1>
-        <div class="poem">
-            みをつくし<br>
-            心づくして<br>
-            思ふどち<br>
-            ここにももわな<br>
-            変はらぬものを
+        <div class="poem-area">
+            <div class="poem">
+                みをつくし 心づくして 思ふどち<br>
+                ここにももわな 変はらぬものを
+            </div>
         </div>
-        <input type="password" id="pass" placeholder="Passphrase" onkeypress="checkPass(event)">
+        <input type="password" id="pass" placeholder="enjoi" onkeypress="checkPass(event)">
     </div>
 
     <div id="main-room">
-        <div class="room-container">
+        <div class="room-container" id="roomContainer">
             <div class="room-card">
-                <h3>Medical Room</h3>
-                <img src="medical.png" alt="Medical Room" class="room-image" onerror="this.src='https://via.placeholder.com/400x600?text=Waiting+for+Photo'">
+                <div class="room-title">Medical</div>
+                <img src="medical.png" alt="Medical Room" class="room-image">
             </div>
-
             <div class="room-card">
-                <h3>Private Room</h3>
-                <img src="private.png" alt="Private Room" class="room-image" onerror="this.src='https://via.placeholder.com/400x600?text=Waiting+for+Photo'">
-            </div>
-
-            <div class="room-card">
-                <h3>Shogi Room</h3>
-                <div class="shogi-board">
-                    </div>
+                <div class="room-title">Private</div>
+                <img src="private.png" alt="Private Room" class="room-image">
             </div>
         </div>
     </div>
@@ -163,12 +145,16 @@
     <script>
         function checkPass(e) {
             if (e.key === 'Enter') {
-                // パスワードは仮に「mio」としています。お好きなものに変更可能です。
-                if (document.getElementById('pass').value === 'mio') {
-                    document.getElementById('entrance').style.opacity = '0';
+                if (document.getElementById('pass').value === 'enjoi') {
+                    const ent = document.getElementById('entrance');
+                    ent.style.transition = 'opacity 1.5s';
+                    ent.style.opacity = '0';
                     setTimeout(() => {
-                        document.getElementById('entrance').style.display = 'none';
+                        ent.style.display = 'none';
                         document.getElementById('main-room').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('roomContainer').style.opacity = '1';
+                        }, 100);
                     }, 1500);
                 }
             }

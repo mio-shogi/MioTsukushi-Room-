@@ -8,35 +8,34 @@
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; line-height: 1.8; }
         
+        /* 1. ロック画面 */
         #lock-screen { position:fixed; inset:0; z-index:5000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         
-        /* 1. 表紙：万葉集と実里さんの華 */
+        /* 2. 表紙：万葉集と【実里さんの華】 */
         #cover-page { 
             display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center;
             background: #f7f2e9; text-align: center; padding: 40px;
         }
-        /* 実里さんがアップロードしたファイル名をここに */
-        .hana-top { width: 90%; max-width: 480px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        
-        .manyoshu-box { max-width: 700px; border-top: 1px solid #b89530; border-bottom: 1px solid #b89530; padding: 40px 0; margin-bottom: 40px; }
-        .m-poem { font-size: 1.8rem; letter-spacing: 0.2em; margin-bottom: 25px; line-height: 2.8; }
-        .m-desc { text-align: left; font-size: 0.95rem; opacity: 0.9; line-height: 2; padding-top: 20px; border-top: 1px solid rgba(184,149,48,0.2); }
+        .hana-image { width: 90%; max-width: 500px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .manyoshu-box { max-width: 700px; border-top: 1px solid #b89530; border-bottom: 1px solid #b89530; padding: 40px 0; margin-bottom: 30px; }
+        .m-poem { font-size: 1.8rem; letter-spacing: 0.25em; margin-bottom: 20px; line-height: 2.5; }
+        .m-desc { text-align: left; font-size: 0.95rem; opacity: 0.9; padding-top: 20px; border-top: 1px solid rgba(184,149,48,0.3); }
 
-        /* 2. エントランスロビー：横並びの扉 */
+        /* 3. EntranceLobby：横並びの扉 */
         #entrance-lobby { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; }
-        .lobby-title { font-family: 'Cormorant Garamond', serif; font-size: 3rem; margin-bottom: 60px; letter-spacing: 0.1em; }
+        .lobby-title { font-family: 'Cormorant Garamond', serif; font-size: 3rem; margin-bottom: 50px; }
         .doors-container { display: flex; gap: 40px; justify-content: center; align-items: flex-end; }
 
-        /* 扉：下半分は見えない重厚な板 */
+        /* 扉の造形：下半分は見えない重厚な板 */
         .mio-door { 
-            width: 220px; height: 400px; border: 8px solid #3d2f25; position: relative; cursor: pointer; background: #3d2f25;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 220px; height: 380px; border: 8px solid #3d2f25; position: relative; cursor: pointer; background: #3d2f25;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: 0.3s;
         }
         .door-window {
-            position: absolute; top: 12px; left: 12px; right: 12px; height: 50%;
+            position: absolute; top: 10px; left: 10px; right: 10px; height: 50%;
             background: #111; overflow: hidden; border: 1px solid #222;
         }
-        .door-window img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: 0.6s; }
+        .door-window img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; transition: 0.5s; }
         .mio-door:hover .door-window img { opacity: 0.9; }
 
         .door-board {
@@ -46,13 +45,14 @@
         }
         .door-label { color: #f7f2e9; font-size: 1.1rem; letter-spacing: 0.2em; }
 
-        /* 各部屋：元の設定を完全維持 */
+        /* 各部屋 */
         .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; overflow-y: auto; }
-        .back-btn { position:absolute; top:40px; left:40px; border:1px solid #b89530; background:none; color:#b89530; padding:8px 20px; cursor:pointer; font-family:'Cormorant Garamond'; }
-
-        .illustration-box { width: 90%; max-width: 600px; margin: 20px auto; border-radius: 3px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .btn-back { position:absolute; top:30px; left:30px; border:1px solid #b89530; background:none; color:#b89530; padding:8px 20px; cursor:pointer; }
+        
+        /* 写真と文章のスタイル（元の比率を維持） */
+        .illustration-box { width: 90%; max-width: 600px; margin: 20px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         .illustration-box img { width: 100%; height: auto; display: block; }
-        .content-text, .prose-excerpt { max-width: 700px; line-height: 2.3; text-align: center; margin-top: 25px; font-size: 1.1rem; }
+        .content-text { max-width: 700px; line-height: 2.2; text-align: center; margin-top: 20px; font-size: 1.1rem; }
 
         /* 将棋盤：実里さんのオリジナル */
         #shogi { background: #96a996; }
@@ -60,19 +60,18 @@
         #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
         .cell { width: 54px; height: 54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
         .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; text-align: center; border:1px solid #b89530; }
-        .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; cursor:grab; font-weight:bold; font-size:1.1rem; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
-        .gote { transform: rotate(180deg); }
+        .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; font-weight:bold; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h1 style="font-family:'Cormorant Garamond';">Mio Tsukushi Room</h1>
+        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Mio Tsukushi Room</h1>
         <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') unlock()">
     </div>
 
     <div id="cover-page">
-        <img src="flower_latest.jpg" class="hana-top">
+        <img src="hana_latest.jpg" class="hana-image">
         <div class="manyoshu-box">
             <p class="m-poem">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
             <div class="m-desc">
@@ -80,7 +79,7 @@
                 <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
             </div>
         </div>
-        <button onclick="toLobby()" style="background:none; border:1px solid #b89530; padding:15px 45px; color:#b89530; cursor:pointer; letter-spacing:0.1em; font-family:'Cormorant Garamond';">ENTRANCE LOBBY</button>
+        <button onclick="toLobby()" style="background:none; border:1px solid #b89530; padding:12px 30px; color:#b89530; cursor:pointer; letter-spacing:0.1em;">ENTER LOBBY</button>
     </div>
 
     <div id="entrance-lobby">
@@ -102,25 +101,23 @@
     </div>
 
     <div id="medical" class="room">
-        <button class="back-btn" onclick="toLobby()">← BACK</button>
+        <button class="btn-back" onclick="toLobby()">← BACK</button>
         <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Room</h1>
         <div class="illustration-box"><img src="medical_hands.jpg"></div>
-        <div class="content-text"><p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と意志だけが、この静かな聖域を満たしている。</p></div>
+        <div class="content-text"><p>一筋の光が照らす術野に、昨日までの迷いは消える。</p></div>
     </div>
 
     <div id="private" class="room">
-        <button class="back-btn" onclick="toLobby()">← BACK</button>
+        <button class="btn-back" onclick="toLobby()">← BACK</button>
         <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
         <div class="illustration-box"><img src="antique_library.jpg"></div>
-        <div class="prose-excerpt"><p>「その昔、コンブレーでは、マドレーヌを紅茶に浸すと、その一口ごとに、私が幼い頃に経験した過去の出来事すべてが、私を包み込む記憶の泡として立ち上ってきたのだった。」<br><br>— マルセル・プルースト 『失われた時を求めて』</p></div>
+        <div class="content-text"><p>「その昔、コンブレーでは……」</p></div>
     </div>
 
     <div id="shogi" class="room">
-        <button class="back-btn" onclick="toLobby()">← BACK</button>
+        <button class="btn-back" onclick="toLobby()">← BACK</button>
         <div id="shogi-layout">
-            <div style="text-align:center;"><div class="komadai" id="kd-g"></div><div id="clock-gote" class="clock">10:00</div></div>
             <div id="board"></div>
-            <div style="text-align:center;"><div id="clock-sente" class="clock">10:00</div><div class="komadai" id="kd-s"></div></div>
         </div>
     </div>
 
@@ -129,7 +126,6 @@
     function unlock() { if(document.getElementById('pass-input').value==='enjoi'){document.getElementById('lock-screen').style.display='none';document.getElementById('cover-page').style.display='flex';setInterval(tick,1000);} }
     function toLobby() { document.querySelectorAll('.room, #cover-page').forEach(r=>r.style.display='none'); document.getElementById('entrance-lobby').style.display='flex'; }
     function showRoom(id) { document.getElementById('entrance-lobby').style.display='none'; document.getElementById(id).style.display='flex'; if(id==='shogi')init(); }
-    
     function tick() { if(active) { times[active]--; ['sente','gote'].forEach(s=>{ const el=document.getElementById(`clock-${s}`); if(el) el.textContent=`${Math.floor(times[s]/60)}:${(times[s]%60).toString().padStart(2,'0')}`; }); } }
     function init() {
         const b=document.getElementById('board'); if(b.children.length>0)return;

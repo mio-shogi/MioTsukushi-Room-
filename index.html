@@ -5,111 +5,162 @@
     <title>Mio Tsukushi Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; }
-
-        /* 1. ロック画面 */
-        #lock-screen { position:fixed; inset:0; z-index:5000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        #pass-input { padding:12px; text-align:center; font-size:1.1rem; border:1px solid #b89530; background:transparent; outline:none; margin-top:20px; }
-
-        /* 2. 表紙：万葉集（説明と華の配置） */
-        #cover-page { 
-            display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center;
-            background: #f7f2e9; text-align: center; padding: 40px;
-        }
-        .manyoshu-box { max-width: 700px; border-top: 1px solid #b89530; border-bottom: 1px solid #b89530; padding: 40px 0; margin-bottom: 30px; }
-        .m-poem { font-size: 1.8rem; letter-spacing: 0.25em; line-height: 2.8; margin-bottom: 25px; }
-        .m-desc { text-align: left; font-size: 0.95rem; opacity: 0.9; padding-top: 20px; border-top: 1px solid rgba(184,149,48,0.3); line-height: 2.2; }
-
-        /* 3. ロビー：横並びの扉（3と4が扉） */
-        #entrance-lobby { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; }
-        .doors-container { display: flex; gap: 40px; justify-content: center; align-items: flex-end; }
-
-        .mio-door { 
-            width: 220px; height: 380px; border: 8px solid #3d2f25; position: relative; cursor: pointer; background: #3d2f25;
-            box-shadow: 0 20px 45px rgba(0,0,0,0.2); 
-        }
-        .door-window {
-            position: absolute; top: 12px; left: 12px; right: 12px; height: 50%;
-            background: #111; overflow: hidden; border: 1px solid #222;
-        }
-        /* 写真がブサイクに切れないための設定 */
-        .door-window img { width: 100%; height: 100%; object-fit: contain; opacity: 0.7; background: #000; }
-
-        .door-panel {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 48%;
-            background: #4a3d33; border-top: 4px solid #3d2f25;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .door-label { color: #f7f2e9; font-size: 1.1rem; letter-spacing: 0.2em; }
-
-        /* 各部屋：1と2が中 */
-        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; overflow-y: auto; }
-        .btn-back { position:absolute; top:40px; left:40px; border:1px solid #b89530; background:none; color:#b89530; padding:10px 25px; cursor:pointer; }
-        .ill-box { width:90%; max-width:650px; box-shadow:0 10px 40px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .ill-box img { width:100%; height:auto; display:block; object-fit: contain; }
-
-        /* 将棋の部屋 */
-        #shogi { background: #96a996; }
-        #board { display: grid; grid-template-columns: repeat(9, 50px); grid-template-rows: repeat(9, 50px); background:#d4a95a; border:3px solid #5d4037; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .cell { width: 50px; height: 50px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #f7f2e9; overflow: hidden; font-family: 'Noto Serif JP', serif; }
+        canvas { display: block; cursor: pointer; }
+        #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #f7f2e9; z-index: 100; }
+        input { padding: 15px; font-size: 1.2rem; border: 1px solid #b89530; background: transparent; text-align: center; outline: none; font-family: 'Cormorant Garamond', serif; }
     </style>
 </head>
 <body>
 
-    <div id="lock-screen">
-        <h1 style="font-family:'Cormorant Garamond';">Mio Tsukushi Room</h1>
-        <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') unlock()">
-    </div>
-
-    <div id="cover-page">
-        <div class="manyoshu-box">
-            <p class="m-poem">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <div class="m-desc">
-                <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
-            </div>
-        </div>
-        <button onclick="toLobby()" style="background:none; border:1px solid #b89530; padding:15px 45px; color:#b89530; cursor:pointer; letter-spacing:0.1em;">ENTER LOBBY</button>
-    </div>
-
-    <div id="entrance-lobby">
-        <div class="doors-container">
-            <div class="mio-door" onclick="showRoom('medical-room')">
-                <div class="door-window"><img src="medical.png"></div>
-                <div class="door-panel"><span class="door-label">医学</span></div>
-            </div>
-            <div class="mio-door" onclick="showRoom('private-room')">
-                <div class="door-window"><img src="private.png"></div>
-                <div class="door-panel"><span class="door-label">思索</span></div>
-            </div>
-            <div class="mio-door" onclick="showRoom('shogi')">
-                <div class="door-window"><div style="width:100%; height:100%; background:#96a996;"></div></div>
-                <div class="door-panel"><span class="door-label">将棋</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="medical-room" class="room">
-        <button class="btn-back" onclick="toLobby()">BACK</button>
-        <div class="ill-box"><img src="medical_hands.jpg"></div>
-    </div>
-    <div id="private-room" class="room">
-        <button class="btn-back" onclick="toLobby()">BACK</button>
-        <div class="ill-box"><img src="antique_library.jpg"></div>
-    </div>
-    <div id="shogi" class="room">
-        <button class="btn-back" onclick="toLobby()">BACK</button>
-        <div id="board"></div>
-    </div>
+<div id="overlay">
+    <input type="password" id="pass" placeholder="Passphrase" onkeydown="if(event.key==='Enter') start()">
+</div>
+<canvas id="stage"></canvas>
 
 <script>
-    function unlock() { if(document.getElementById('pass-input').value==='enjoi'){document.getElementById('lock-screen').style.display='none';document.getElementById('cover-page').style.display='flex';} }
-    function toLobby() { document.querySelectorAll('.room, #cover-page').forEach(r=>r.style.display='none'); document.getElementById('entrance-lobby').style.display='flex'; }
-    function showRoom(id) { document.getElementById('entrance-lobby').style.display='none'; document.getElementById(id).style.display='flex'; if(id==='shogi')init(); }
-    function init() {
-        const b=document.getElementById('board'); if(b.children.length>0)return;
-        for(let i=0;i<81;i++){ const c=document.createElement('div'); c.className='cell'; b.appendChild(c); }
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+let scene = 'cover1'; // cover1(歌), cover2(説明文字), lobby, room_med, room_pri, room_shogi
+const imgs = {};
+const files = {
+    img1: 'medical_hands.jpg',
+    img2: 'antique_library.jpg',
+    img3: 'medical.png',
+    img4: 'private.png'
+};
+
+function start() {
+    if(document.getElementById('pass').value !== 'enjoi') return;
+    document.getElementById('overlay').style.display = 'none';
+    load();
+}
+
+function load() {
+    let loaded = 0;
+    const targets = Object.keys(files);
+    targets.forEach(key => {
+        imgs[key] = new Image();
+        imgs[key].src = files[key];
+        imgs[key].onload = () => { loaded++; if(loaded === targets.length) render(); };
+    });
+}
+
+function render() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (scene === 'cover1') {
+        // 1枚目：万葉集の歌
+        drawText("みをつくし 心尽して 思へかも", canvas.height/2 - 30, 28);
+        drawText("ここにももとな 夢にし見ゆる", canvas.height/2 + 30, 28);
+    } 
+    else if (scene === 'cover2') {
+        // 2枚目：文字による説明（ここを実里さんの言葉に戻しました）
+        ctx.fillStyle = '#1c1710';
+        ctx.font = '300 18px "Noto Serif JP"';
+        ctx.textAlign = 'center';
+        const description = [
+            "意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。",
+            "こんなにもしきりに、あの人のことが夢に見えるのは。",
+            "",
+            "思索の深さを物語る、静謐な書庫への入り口。"
+        ];
+        description.forEach((line, i) => {
+            ctx.fillText(line, canvas.width/2, canvas.height/2 - 60 + i*40);
+        });
+    } 
+    else if (scene === 'lobby') {
+        // ロビーの表題
+        ctx.fillStyle = '#1c1710';
+        ctx.font = '300 42px "Cormorant Garamond"';
+        ctx.textAlign = 'center';
+        ctx.fillText("Entrance Lobby", canvas.width/2, 120);
+        ctx.font = '300 20px "Noto Serif JP"';
+        ctx.fillText("MioRoomへようこそ", canvas.width/2, 170);
+
+        // 3つの扉：写真は全体に貼り、下半分は板
+        drawRealisticDoor(canvas.width/2 - 320, 280, imgs.img3, "医学");
+        drawRealisticDoor(canvas.width/2 - 75, 280, imgs.img4, "思索");
+        drawRealisticDoor(canvas.width/2 + 170, 280, null, "将棋");
     }
+    else {
+        // 各部屋：中にある写真は切れないように描画
+        const roomImg = (scene === 'room_med') ? imgs.img1 : (scene === 'room_pri') ? imgs.img2 : null;
+        if(roomImg) {
+            const s = Math.min(canvas.width*0.8/roomImg.width, canvas.height*0.8/roomImg.height);
+            ctx.drawImage(roomImg, (canvas.width-roomImg.width*s)/2, (canvas.height-roomImg.height*s)/2, roomImg.width*s, roomImg.height*s);
+        } else {
+            // 将棋盤
+            ctx.fillStyle = '#d4a95a';
+            ctx.fillRect(canvas.width/2-225, canvas.height/2-225, 450, 450);
+        }
+        ctx.fillStyle = '#b89530';
+        ctx.font = '16px "Noto Serif JP"';
+        ctx.fillText("← BACK", 80, 50);
+    }
+}
+
+function drawRealisticDoor(x, y, img, label) {
+    const w = 150, h = 350;
+    // 扉の枠
+    ctx.strokeStyle = '#3d2f25';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(x, y, w, h);
+
+    if(img) {
+        // 【実里さんの指示通り】扉全体に写真を貼り、下半分を板で隠す
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x+3, y+3, w-6, h-6);
+        ctx.clip();
+        const s = Math.max(w/img.width, h/img.height);
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(img, x + (w-img.width*s)/2, y + (h-img.height*s)/2, img.width*s, img.height*s);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = '#96a996'; // 将棋用
+        ctx.fillRect(x+3, y+3, w-6, h-6);
+    }
+
+    // 下半分を重厚な板で隠す（これが「自然な扉」）
+    ctx.globalAlpha = 1.0;
+    ctx.fillStyle = '#4a3d33';
+    ctx.fillRect(x, y + h/2, w, h/2);
+    ctx.strokeStyle = '#3d2f25';
+    ctx.strokeRect(x, y + h/2, w, h/2);
+
+    ctx.fillStyle = '#f7f2e9';
+    ctx.font = '16px "Noto Serif JP"';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + w/2, y + h * 0.85);
+}
+
+function drawText(txt, y, size) {
+    ctx.fillStyle = '#1c1710';
+    ctx.font = `300 ${size}px "Noto Serif JP"`;
+    ctx.textAlign = 'center';
+    ctx.fillText(txt, canvas.width/2, y);
+}
+
+canvas.addEventListener('click', (e) => {
+    const x = e.clientX, y = e.clientY;
+    if (scene === 'cover1') scene = 'cover2';
+    else if (scene === 'cover2') scene = 'lobby';
+    else if (scene === 'lobby') {
+        if(y > 280 && y < 630) {
+            if(x > canvas.width/2 - 320 && x < canvas.width/2 - 170) scene = 'room_med';
+            else if(x > canvas.width/2 - 75 && x < canvas.width/2 + 75) scene = 'room_pri';
+            else if(x > canvas.width/2 + 170 && x < canvas.width/2 + 320) scene = 'room_shogi';
+        }
+    } else {
+        if(x < 150 && y < 100) scene = 'lobby';
+    }
+    render();
+});
+
+window.addEventListener('resize', render);
 </script>
 </body>
 </html>

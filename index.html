@@ -7,103 +7,136 @@
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; line-height: 1.8; }
-        #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        
+        /* 表紙（ロック画面）：万葉集の解説をここに配置 */
+        #lock-screen { position:fixed; inset:0; z-index:4000; background:#f7f2e9; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px; text-align: center;}
+        .lock-content { max-width: 700px; }
+        .poem-main { font-size:1.6rem; line-height:2.6; margin-bottom: 25px; color: #1c1710; }
+        .poem-desc { text-align:left; font-size:0.9rem; border-top:1px solid #b89530; padding-top:20px; color: #555; margin-bottom: 40px; line-height: 1.8; }
+        #pass-input { padding:12px; text-align:center; font-size:1rem; border:1px solid #b89530; background: transparent; width: 220px; outline: none; }
+
+        /* ナビゲーション */
         #nav { position:fixed; top:0; width:100%; display:none; justify-content:center; background:rgba(247,242,233,.95); z-index:1000; border-bottom:1px solid rgba(184,149,48,.16); backdrop-filter:blur(8px); }
-        #nav button { background:none; border:none; padding:1.2rem 2rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; transition: 0.3s; font-size: 1.1rem; }
+        #nav button { background:none; border:none; padding:1.2rem 1.5rem; font-family:'Cormorant Garamond', serif; cursor:pointer; color:#1c1710; opacity:0.5; transition: 0.3s; font-size: 1rem; }
         #nav button.active { opacity:1; color:#b89530; }
-        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; padding-bottom: 80px; overflow-y: auto; }
 
-        /* 写真：寂しくないよう、かつ、はみ出さない絶妙なサイズ(600px) */
-        .illustration-box { 
-            width: 90%; 
-            max-width: 600px; 
-            margin: 20px auto; 
-            border-radius: 3px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
-        }
-        .illustration-box img { width: 100%; height: auto; display: block; }
+        .room { display:none; padding-top:100px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; padding-bottom: 80px; }
 
-        /* 文章：小さすぎず、読みやすいサイズに肉付け */
-        .content-text { max-width: 700px; line-height: 2.2; text-align: center; padding: 0 25px; margin-top: 20px; font-size: 1.1rem; }
-        .poem-box { margin: 40px auto; text-align:center; max-width:700px; padding:40px; border-top:1px solid #b89530; }
-        .prose-excerpt { max-width: 700px; margin-top: 25px; padding: 0 25px; font-size: 1.15rem; line-height: 2.3; text-align: justify; }
+        /* HOME：エントランスの三つの扉 */
+        .welcome-msg { font-size: 1.8rem; margin-bottom: 50px; color: #b89530; font-family: 'Cormorant Garamond', serif; }
+        .door-container { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; width: 95%; max-width: 1000px; }
+        .door-frame { width: 280px; text-align: center; cursor: pointer; transition: 0.4s; }
+        .door-frame:hover { transform: translateY(-10px); }
+        .door-window { width: 100%; height: 380px; border: 3px solid #b89530; border-radius: 140px 140px 5px 5px; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #eee; }
+        .door-window img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: 0.4s; }
+        .door-label { margin-top: 15px; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 2px; color: #1c1710; }
 
-        /* 将棋：100%の堂々としたサイズへ */
-        #shogi { background: #96a996; } 
+        /* 各お部屋のレイアウト（左：トピックス / 中：画像 / 右：知識） */
+        .triptych-layout { display: flex; width: 95%; max-width: 1200px; align-items: flex-start; gap: 40px; margin-top: 30px; }
+        .side-menu { flex: 1; padding: 20px; border-top: 1px solid rgba(184,149,48,0.3); }
+        .side-menu h3 { font-size: 1rem; margin-bottom: 15px; color: #b89530; border-bottom: 1px solid #b89530; display: inline-block; font-family: 'Cormorant Garamond', serif; letter-spacing: 1px; }
+        .side-menu ul { list-style: none; font-size: 0.9rem; line-height: 2.2; color: #444; }
+        .center-image { flex: 1.5; text-align: center; }
+        .center-image img { width: 100%; height: auto; border-radius: 2px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+
+        /* 将棋盤（昨夜のサイズを維持） */
+        #shogi { background: #96a996; }
         #shogi-layout { display:flex; align-items:center; gap:40px; padding: 40px; background: rgba(255,255,255,0.25); border-radius: 15px; }
-        #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        #board { display: grid; grid-template-columns: repeat(9, 54px); grid-template-rows: repeat(9, 54px); background:#d4a95a; border:3px solid #5d4037; }
         .cell { width: 54px; height: 54px; border:0.5px solid #2a1808; display:flex; justify-content:center; align-items:center; }
-        .komadai { width:110px; height:200px; background:#e3c08d; border:2px solid #5d4037; border-radius: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 5px; }
-        .clock { font-family:'Cormorant Garamond', serif; font-size:1.8rem; background:#1c1710; color:#b89530; padding:10px; min-width:130px; border:1px solid #b89530; margin-bottom: 10px; text-align: center;}
-        #clock-gote { transform: rotate(180deg); }
-        .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; cursor:grab; font-weight:bold; font-size:1.1rem; user-select:none; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
+        .koma { width:42px; height:48px; background:#faecd5; border:1px solid #7a5230; display:flex; justify-content:center; align-items:center; font-weight:bold; clip-path: polygon(50% 0%, 100% 20%, 85% 100%, 15% 100%, 0% 20%); }
         .gote { transform: rotate(180deg); }
     </style>
 </head>
 <body>
+
     <div id="lock-screen">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Mio Tsukushi Room</h1>
-        <input type="password" id="pass-input" placeholder="Passphrase" style="padding:12px; text-align:center; font-size:1.1rem;" onkeydown="if(event.key==='Enter') unlock()">
+        <div class="lock-content">
+            <div class="poem-main">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</div>
+            <div class="poem-desc">
+                <p><strong>【万葉集 第十二巻：3162】</strong></p>
+                <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
+            </div>
+            <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') unlock()">
+        </div>
     </div>
+
     <nav id="nav">
         <button id="btn-home" onclick="show('home')">HOME</button>
-        <button id="btn-medical" onclick="show('medical')">MEDICAL ROOM</button>
+        <button id="btn-medical" onclick="show('medical')">MEDICAL</button>
         <button id="btn-private" onclick="show('private')">PRIVATE</button>
-        <button id="btn-shogi" onclick="show('shogi')">SHOGI GAME</button>
+        <button id="btn-shogi" onclick="show('shogi')">SHOGI</button>
     </nav>
 
     <div id="home" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3.5rem;">Sanctuary of enjoi</h1>
-        <div class="poem-box">
-            <p style="font-size:1.7rem; line-height:2.8; margin-bottom: 25px;">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <div style="text-align:left; font-size:1rem; border-top:1px solid rgba(184,149,48,0.4); padding-top:20px; opacity:0.9;">
-                <p style="margin-bottom:8px;"><strong>【万葉集 第十二巻：3162】</strong></p>
-                <p>意味：私が身を尽くし、心を尽くして、あの人のことを想っているからでしょうか。こんなにもしきりに、あの人のことが夢に見えるのは。</p>
+        <div class="welcome-msg">ようこそ、Mio-Roomへ</div>
+        <div class="door-container">
+            <div class="door-frame" onclick="show('medical')">
+                <div class="door-window"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg"></div>
+                <div class="door-label">Medical Room</div>
+            </div>
+            <div class="door-frame" onclick="show('private')">
+                <div class="door-window"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg"></div>
+                <div class="door-label">Private Room</div>
+            </div>
+            <div class="door-frame" onclick="show('shogi')">
+                <div class="door-window"><div style="padding-top:160px; color:#b89530;">襖 (Image)</div></div>
+                <div class="door-label">Shogi Game</div>
             </div>
         </div>
     </div>
 
     <div id="medical" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Medical Room</h1>
-        <div class="illustration-box"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg"></div>
-        <div class="content-text"><p>一筋の光が照らす術野に、昨日までの迷いは消える。<br>指先に宿る記憶と意志だけが、この静かな聖域を満たしている。</p></div>
+        <h1 style="font-family:'Cormorant Garamond'; letter-spacing:3px;">Medical Room</h1>
+        <div class="triptych-layout">
+            <div class="side-menu"><h3>Topics</h3><ul><li>臨床の現場から</li><li>最新の医療ニュース</li></ul></div>
+            <div class="center-image"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/medical_hands.jpg"></div>
+            <div class="side-menu"><h3>Knowledge</h3><ul><li>専門領域の基礎</li><li>症例アーカイブ</li></ul></div>
+        </div>
     </div>
 
     <div id="private" class="room">
-        <h1 style="font-family:'Cormorant Garamond'; font-size:3rem;">Private Room</h1>
-        <div class="illustration-box"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg"></div>
-        <div class="prose-excerpt"><p>「その昔、コンブレーでは、マドレーヌを紅茶に浸すと、その一口ごとに、私が幼い頃に経験した過去の出来事すべてが、私を包み込む記憶の泡として立ち上ってきたのだった。」<br><br>— マルセル・プルースト 『失われた時を求めて』</p></div>
+        <h1 style="font-family:'Cormorant Garamond'; letter-spacing:3px;">Private Room</h1>
+        <div class="triptych-layout">
+            <div class="side-menu"><h3>Essays</h3><ul><li>日々の断筆</li><li>読書録</li></ul></div>
+            <div class="center-image"><img src="https://mio-shogi.github.io/MioTsukushi-Room-/antique_library.jpg"></div>
+            <div class="side-menu"><h3>Library</h3><ul><li>愛する古典たち</li><li>記憶の断片</li></ul></div>
+        </div>
     </div>
 
     <div id="shogi" class="room">
         <div id="shogi-layout">
-            <div style="text-align:center;"><div class="komadai" id="kd-g"></div><div id="clock-gote" class="clock">10:00</div></div>
             <div id="board"></div>
-            <div style="text-align:center;"><div id="clock-sente" class="clock">10:00</div><div class="komadai" id="kd-s"></div></div>
         </div>
     </div>
 
 <script>
-    let times = {sente:600, gote:600}, active = null;
-    function unlock() { if(document.getElementById('pass-input').value==='enjoi'){document.getElementById('lock-screen').style.display='none';document.getElementById('nav').style.display='flex';show('home');setInterval(tick,1000);} }
+    function unlock() { 
+        // 以前と同じパスワード（enjoi）で入室します
+        if(document.getElementById('pass-input').value==='enjoi'){
+            document.getElementById('lock-screen').style.display='none';
+            document.getElementById('nav').style.display='flex';
+            show('home');
+        } 
+    }
     function show(id) { 
         document.querySelectorAll('.room').forEach(r=>r.style.display='none'); 
         document.querySelectorAll('#nav button').forEach(b=>b.classList.remove('active'));
         document.getElementById(id).style.display='flex'; 
-        const btn = document.querySelector(`button[onclick="show('${id}')"]`) || document.getElementById('btn-'+id);
+        const btn = document.getElementById('btn-' + id);
         if(btn) btn.classList.add('active');
-        if(id==='shogi')init(); 
+        if(id==='shogi')initShogi(); 
     }
-    function tick() { if(active) { times[active]--; ['sente','gote'].forEach(s=>{ const el=document.getElementById(`clock-${s}`); if(el) el.textContent=`${Math.floor(times[s]/60)}:${(times[s]%60).toString().padStart(2,'0')}`; }); } }
-    function init() {
+    function initShogi() {
         const b=document.getElementById('board'); if(b.children.length>0)return;
-        const L={'0-0':'香','1-0':'桂','2-0':'銀','3-0':'金','4-0':'玉','5-0':'金','6-0':'銀','7-0':'桂','8-0':'香','1-1':'飛','7-1':'角','0-8':'香','1-8':'桂','2-8':'銀','3-8':'金','4-8':'王','5-8':'金','6-8':'銀','7-8':'桂','8-8':'香','1-7':'角','7-7':'飛'};
         for(let i=0;i<81;i++){
-            const x=i%9,y=Math.floor(i/9),c=document.createElement('div'); c.className='cell';
-            const k=L[`${x}-${y}`]||(y===2||y===6?'歩':null);
-            if(k){ const p=document.createElement('div'); p.id='p'+i; p.className='koma'+(y<3?' gote':''); p.textContent=k; p.draggable=true; p.dataset.s=y<3?'gote':'sente'; p.addEventListener('dragstart',e=>e.dataTransfer.setData('text',e.target.id)); c.appendChild(p); }
-            c.addEventListener('dragover',e=>e.preventDefault());
-            c.addEventListener('drop',function(e){ const p=document.getElementById(e.dataTransfer.getData('text')); if(p){this.appendChild(p); active=p.dataset.s==='gote'?'sente':'gote';} });
+            const x=i%9, y=Math.floor(i/9), c=document.createElement('div'); c.className='cell';
+            const isGote = y < 3; const isSente = y > 5;
+            if(isGote || isSente){
+                const p=document.createElement('div'); p.className='koma'+(isGote?' gote':'');
+                p.textContent = (y===2||y===6) ? '歩' : '駒';
+                c.appendChild(p);
+            }
             b.appendChild(c);
         }
     }

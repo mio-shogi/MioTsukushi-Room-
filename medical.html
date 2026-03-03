@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Room</title>
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* 実里さんが作成した文字入り画像を、歪ませず画面いっぱいに表示 */
+        .room-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: url('img/medical_bg.png') no-repeat center center;
+            background-size: cover; /* 画面全体に美しくフィットさせます */
+            z-index: 1;
+        }
+
+        .back-link {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 25px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            font-family: serif;
+            backdrop-filter: blur(5px);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="room-background"></div>
+    <a href="lobby.html" class="back-link">ロビーへ戻る</a>
+</body>
+</html>

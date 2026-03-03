@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Entrance Lobby</title>
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* 1. 背景画像 */
+        .full-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            object-fit: fill;
+            z-index: 1;
+        }
+
+        /* 2. 「Topへ」ボタン：グレーを薄く、言葉を軽やかに */
+        .exit-button {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 9999;
+            /* 背景はごく薄い霧のようなグレーに */
+            background: rgba(0, 0, 0, 0.2); 
+            color: #ffffff;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-family: "MS PMincho", "Hiragino Mincho ProN", serif;
+            backdrop-filter: blur(3px); /* 磨りガラスを控えめに */
+            display: block;
+        }
+
+        .exit-button:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        /* 3. 三つの扉（透明なクリックエリア） */
+        .door-link-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 50;
+            display: flex;
+        }
+        .door-link {
+            flex: 1;
+            height: 100%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="img/Entrance Lobby.png" class="full-screen">
+
+    <a href="index.html" class="exit-button">Topへ</a>
+
+    <div class="door-link-container">
+        <a href="medical.html" class="door-link" title="医学"></a>
+        <a href="private.html" class="door-link" title="私室"></a>
+        <a href="shogi.html" class="door-link" title="将棋"></a>
+    </div>
+
+</body>
+</html>

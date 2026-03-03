@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Shogi Game Room | Mio's House</title>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "serif"; }
+        .background-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #dcb35c url('img/Shogi.png') no-repeat center top;
+            background-size: cover; z-index: -1;
+        }
+        .main-container { display: flex; flex-direction: column; align-items: center; height: 100vh; justify-content: center; padding-top: 60px; }
+        .game-area { display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .player-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .komadai { width: 80px; height: 380px; background: rgba(219, 179, 92, 0.95); border: 2px solid #5d4037; border-radius: 3px; font-size: 14px; text-align: center; padding-top: 8px; color: #000; }
+        .clock { background: #000; color: #e0c389; padding: 4px 10px; font-size: 18px; border-radius: 3px; border: 1px solid #e0c389; min-width: 70px; text-align: center; }
+        .board { display: grid; grid-template-columns: repeat(9, 38px); grid-template-rows: repeat(9, 42px); gap: 1.5px; background: #333; border: 4px solid #5d4037; }
+        .cell { width: 38px; height: 42px; background-color: #f3d592 !important; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: #000; border: 1px solid rgba(0,0,0,0.1); }
+        .selected { background-color: #ffeb3b !important; } /* 選択された駒の色 */
+        .gote-piece { transform: rotate(180deg); display: inline-block; }
+        .bottom-log { width: 600px; height: 65px; background: rgba(255,255,255,0.85); border-radius: 6px; padding: 8px 15px; overflow-y: auto; font-size: 13px; border-left: 6px solid #5d4037; box-shadow: 0 4px 10px rgba(0,0,0,0.2); line-height: 1.4; margin-bottom: 20px; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="main-container">
+        <div class="game-area">
+            <div class="player-side"><div class="clock">10:00</div><div class="komadai">後手</div></div>
+            <div id="board" class="board"></div>
+            <div class="player-side"><div class="komadai">先手</div><div class="clock">10:00</div></div>
+        </div>
+        <div id="log" class="bottom-log"><strong>Mio's House Log</strong><p>対局準備が整いました。駒を動かしてみてください。</p></div>
+    </div>
+
+    <script>
+        // --- 1. 通信の設定 ---
+        const pusher = new Pusher("ac6233c881f474d2d6e3", { cluster: "ap3" });
+        const channel = pusher.subscribe("shogi");
+
+        channel.bind("move", (data) => {
+            applyMove(data.from, data.to, data.piece);
+            addLog(`相手が ${data.piece} を動かしました`);
+        });
+
+        async function sendMove(from, to, piece) {
+            await fetch("https://vocal-khapse-d0cde1.netlify.app/.netlify/functions/move", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ from, to, piece })
+            });
+        }
+
+        // --- 2. 盤面のロジック ---
+        const boardElement = document.getElementById('board');
+        const logElement = document.getElementById('log');
+        let initialBoard = [
+            ['香','桂','銀','金','王','金','銀','桂','香'],
+            ['','飛','','','','','','角',''],
+            ['歩','歩','歩','歩','歩','歩','歩','歩','歩'],
+            ['','','','','','','','',''],
+            ['','','','','','','','',''],
+            ['','','','','','','','',''],
+            ['歩','歩','歩','歩','歩','歩','歩','歩','歩'],
+            ['','角','','','','','','飛',''],
+            ['香','桂','銀','金','玉','金','銀','桂','香']
+        ];
+
+        let selected = null;
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (selected && selected.r === r && selected.c === c) cell.classList.add('selected');
+                    
+                    const piece = initialBoard[r][c];
+                    if (piece) {
+                        const span = document.createElement('span');
+                        span.innerText = piece;
+                        if (r <= 2) span.className = 'gote-piece';
+                        cell.appendChild(span);
+                    }
+                    cell.onclick = () => handleCellClick(r, c);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(r, c) {
+            if (!selected) {
+                if (initialBoard[r][c]) {
+                    selected = { r, c, piece: initialBoard[r][c] };
+                    createBoard();
+                }
+            } else {
+                const from = `${selected.r},${selected.c}`;
+                const to = `${r},${c}`;
+                const piece = selected.piece;
+                
+                applyMove(from, to, piece);
+                sendMove(from, to, piece);
+                addLog(`あなたが ${piece} を動かしました`);
+                selected = null;
+                createBoard();
+            }
+        }
+
+        function applyMove(from, to, piece) {
+            const [fr, fc] = from.split(',').map(Number);
+            const [tr, tc] = to.split(',').map(Number);
+            initialBoard[fr][fc] = '';
+            initialBoard[tr][tc] = piece;
+            createBoard();
+        }
+
+        function addLog(msg) {
+            const p = document.createElement('p');
+            p.innerText = msg;
+            logElement.appendChild(p);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>

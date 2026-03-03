@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Mio Tsukushi Room</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #1c1710; --accent: #b89530; }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Serif JP', serif;
+            background-color: #f7f2e9;
+            color: var(--primary);
+        }
+
+        /* 背景画像 */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/sakura.jpg'); /* imgフォルダ内のsakura.jpg */
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* 薄いオーバーレイで文字を見やすく */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 252, 248, 0.3);
+            z-index: 1;
+        }
+
+        /* コンテナ */
+        .container {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        header {
+            font-size: 3rem;
+            letter-spacing: 0.4em;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .poem-box {
+            border-top: 1px solid var(--accent);
+            border-bottom: 1px solid var(--accent);
+            padding: 2.5rem 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .poem {
+            font-size: 1.6rem;
+            line-height: 2.5;
+            letter-spacing: 0.25em;
+            font-weight: 300;
+        }
+
+        .poem-desc {
+            font-size: 1rem;
+            color: #555;
+            max-width: 650px;
+            margin: 0 auto 3rem;
+            line-height: 2;
+        }
+
+        .password-box {
+            margin-top: 2rem;
+        }
+
+        input[type="password"] {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            background-color: var(--accent);
+            border: none;
+            color: white;
+        }
+
+        /* ロビー */
+        .lobby {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .welcome-msg {
+            font-size: 2.2rem;
+            margin-bottom: 3rem;
+            font-weight: 600;
+        }
+
+        .doors {
+            display: flex;
+            gap: 40px;
+        }
+
+        .door {
+            width: 170px;
+            height: 320px;
+            border: 1.5px solid var(--accent);
+            background: rgba(255, 255, 255, 0.45);
+            cursor: pointer;
+            transition: 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .door:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 各部屋 */
+        .room {
+            display: none;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .room h2 {
+            margin-bottom: 20px;
+        }
+
+        .room-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        .room-index {
+            width: 200px;
+            text-align: left;
+        }
+
+        .room-main {
+            width: 400px;
+        }
+
+        .room-main img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="overlay"></div>
+
+    <div class="container">
+        <header>MioTsukushi-Room</header>
+
+        <div class="poem-box">
+            <div class="poem">春の夜の夢のうき橋をわたるごとに心ぞなぐさむる</div>
+            <div class="poem-desc">この御歌は春の夜の夢を渡る心のなぐさめを表しています。</div>
+        </div>
+
+        <div class="password-box">
+            <input type="password" id="pw" placeholder="パスワードを入力">
+            <button onclick="checkPassword()">入室</button>
+        </div>
+    </div>
+
+    <!-- ロビー -->
+    <div class="container lobby" id="lobby">
+        <div class="welcome-msg">Welcome to Mio Room!</div>
+        <div class="doors">
+            <div class="door" onclick="enterRoom('medicine')">医学の部屋</div>
+            <div class="door" onclick="enterRoom('private')">プライベートの部屋</div>
+            <div class="door" onclick="enterRoom('shogi')">将棋の部屋</div>
+        </div>
+    </div>
+
+    <!-- 各部屋 -->
+    <div class="container room" id="medicine">
+        <h2>医学の部屋</h2>
+        <div class="room-content">
+            <div class="room-index">
+                <ul>
+                    <li>研究ノート</li>
+                    <li>学会発表</li>
+                    <li>論文リンク</li>
+                </ul>
+            </div>
+            <div class="room-main">
+                <img src="img/medicine.jpg" alt="医学イメージ">
+            </div>
+        </div>
+        <button onclick="backToLobby()">ロビーに戻る</button>
+    </div>
+
+    <div class="container room" id="private">
+        <h2>プライベートの部屋</h2>
+        <div class="room-content">
+            <div class="room-index">
+                <ul>
+                    <li>日記</li>
+                    <li>写真</li>
+                    <li>思い出</li>
+                </ul>
+            </div>
+            <div class="room-main">
+                <img src="img/private.jpg" alt="プライベートイメージ">
+            </div>
+        </div>
+        <button onclick="backToLobby()">ロビーに戻る</button>
+    </div>
+
+    <div class="container room" id="shogi">
+        <h2>将棋の部屋</h2>
+        <p>ここでネット対局を行う予定です。</p>
+        <button onclick="backToLobby()">ロビーに戻る</button>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const pw = document.getElementById("pw").value;
+            if(pw === "enjoi") {
+                document.querySelector('.container').style.display = 'none';
+                document.getElementById('lobby').style.display = 'flex';
+            } else {
+                alert("パスワードが違います");
+            }
+        }
+
+        function enterRoom(room) {
+            document.getElementById('lobby').style.display = 'none';
+            document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
+            document.getElementById(room).style.display = 'flex';
+        }
+
+        function backToLobby() {
+            document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
+            document.getElementById('lobby').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

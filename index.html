@@ -3,112 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Mio Tsukushi Room</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Noto Serif JP', serif; background:#f7f2e9; color:#1c1710; overflow-x:hidden; line-height: 1.8; }
-        
-        /* 1. 表紙：タイトル・歌・パスワードが「一つの美」として存在する場所 */
-        #cover-page { 
-            position: fixed; inset: 0; z-index: 5000; background: #f7f2e9;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: #000; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: fill; }
+        #login-overlay {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            z-index: 10; text-align: center; background: rgba(255, 255, 255, 0.3);
+            padding: 10px 20px; border-radius: 50px; backdrop-filter: blur(8px);
         }
-        .main-title { font-family: 'Cormorant Garamond'; font-size: 3.5rem; margin-bottom: 40px; letter-spacing: 0.1em; }
-        .manyoshu-section { max-width: 700px; border-top: 1px solid #b89530; border-bottom: 1px solid #b89530; padding: 40px 0; margin-bottom: 40px; }
-        .m-poem { font-size: 1.6rem; letter-spacing: 0.2em; line-height: 2.5; margin-bottom: 20px; }
-        .m-desc { font-size: 0.9rem; opacity: 0.8; max-width: 500px; margin: 0 auto; line-height: 2; }
-        #pass-input { padding: 12px; text-align: center; font-size: 1.1rem; border: none; border-bottom: 1px solid #b89530; background: transparent; outline: none; width: 200px; }
-
-        /* 2. ロビー：EntranceLobby と 3つの扉 */
-        #entrance-lobby { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-        .lobby-header { text-align: center; margin-bottom: 80px; }
-        .lobby-title { font-family: 'Cormorant Garamond'; font-size: 3rem; margin-bottom: 10px; }
-        
-        .doors-container { display: flex; gap: 40px; justify-content: center; align-items: flex-end; }
-
-        /* 実里さんの扉：全体に写真、下半分は板で隠す（自然な佇まい） */
-        .mio-door { 
-            width: 200px; height: 380px; border: 8px solid #3d2f25; position: relative; cursor: pointer; background: #3d2f25;
-            box-shadow: 0 20px 45px rgba(0,0,0,0.2); overflow: hidden;
-        }
-        .door-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
-        .door-panel { 
-            position: absolute; bottom: 0; left: 0; right: 0; height: 48%; 
-            background: #4a3d33; border-top: 4px solid #3d2f25; 
-            display: flex; align-items: center; justify-content: center;
-        }
-        .door-label { color: #f7f2e9; font-size: 1.1rem; letter-spacing: 0.2em; z-index: 2; }
-
-        /* 3. 部屋：1と2が中 */
-        .room { display:none; padding: 60px 20px; min-height:100vh; width:100vw; flex-direction:column; align-items:center; position:relative; }
-        .btn-back { position:fixed; top:40px; left:40px; border:1px solid #b89530; background:none; color:#b89530; padding:10px 20px; cursor:pointer; z-index: 100; }
-        .image-frame { width: 90%; max-width: 700px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
-        .image-frame img { width: 100%; height: auto; display: block; }
+        input { border: none; padding: 8px 15px; border-radius: 20px; outline: none; }
+        button { background: #444; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; margin-left: 10px; }
     </style>
 </head>
 <body>
-
-    <div id="cover-page">
-        <h1 class="main-title">Mio Tsukushi Room</h1>
-        <div class="manyoshu-section">
-            <p class="m-poem">みをつくし 心尽して 思へかも<br>ここにももとな 夢にし見ゆる</p>
-            <p class="m-desc">思索の深さを物語る、静謐な聖域への入り口。<br>（ここに実里さんの説明文が静かに佇みます）</p>
-        </div>
-        <input type="password" id="pass-input" placeholder="Passphrase" onkeydown="if(event.key==='Enter') unlock()">
+    <img src="img/MioTsukushi-Room.png" class="full-screen">
+    <div id="login-overlay">
+        <input type="text" id="pass-input" placeholder="合言葉">
+        <button type="button" onclick="checkPass()">開錠</button>
     </div>
-
-    <div id="entrance-lobby">
-        <div class="lobby-header">
-            <h1 class="lobby-title">Entrance Lobby</h1>
-            <p>MioRoomへようこそ</p>
-        </div>
-        <div class="doors-container">
-            <div class="mio-door" onclick="showRoom('med')">
-                <img src="medical.png" class="door-photo">
-                <div class="door-panel"><span class="door-label">医学</span></div>
-            </div>
-            <div class="mio-door" onclick="showRoom('pri')">
-                <img src="private.png" class="door-photo">
-                <div class="door-panel"><span class="door-label">思索</span></div>
-            </div>
-            <div class="mio-door" onclick="showRoom('sho')">
-                <div style="width:100%; height:100%; background:#96a996;"></div>
-                <div class="door-panel"><span class="door-label">将棋</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="med" class="room">
-        <button class="btn-back" onclick="toLobby()">← BACK</button>
-        <div class="image-frame"><img src="medical_hands.jpg"></div>
-    </div>
-    <div id="pri" class="room">
-        <button class="btn-back" onclick="toLobby()">← BACK</button>
-        <div class="image-frame"><img src="antique_library.jpg"></div>
-    </div>
-    <div id="sho" class="room">
-        <button class="btn-back" onclick="toLobby()">← BACK</button>
-        <p>将棋の静寂</p>
-    </div>
-
-<script>
-    function unlock() {
-        if(document.getElementById('pass-input').value === 'enjoi') {
-            document.getElementById('cover-page').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('cover-page').style.display = 'none';
-                document.getElementById('entrance-lobby').style.display = 'flex';
-            }, 500);
+    <script>
+        function checkPass() {
+            var pass = document.getElementById('pass-input').value;
+            if (pass === "enjoi") { window.location.href = "lobby.html"; } 
+            else { alert("合言葉が違います。"); }
         }
-    }
-    function toLobby() {
-        document.querySelectorAll('.room').forEach(r => r.style.display = 'none');
-        document.getElementById('entrance-lobby').style.display = 'flex';
-    }
-    function showRoom(id) {
-        document.getElementById('entrance-lobby').style.display = 'none';
-        document.getElementById(id).style.display = 'flex';
-    }
-</script>
+    </script>
 </body>
 </html>

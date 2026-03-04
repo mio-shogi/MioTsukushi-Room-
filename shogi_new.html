@@ -14,60 +14,68 @@
         .main-container { display: flex; flex-direction: column; align-items: center; height: 100vh; justify-content: center; padding-top: 60px; }
         .game-area { display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.15); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .player-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .komadai { width: 80px; height: 380px; background: rgba(219, 179, 92, 0.95); border: 2px solid #5d4037; border-radius: 3px; font-size: 14px; text-align: center; padding-top: 8px; color: #000; }
-        .clock { background: #000; color: #e0c389; padding: 4px 10px; font-size: 18px; border-radius: 3px; border: 1px solid #e0c389; min-width: 70px; text-align: center; }
+        .komadai { width: 90px; height: 380px; background: rgba(219, 179, 92, 0.95); border: 2px solid #5d4037; border-radius: 3px; font-size: 14px; text-align: left; padding: 8px; color: #000; overflow-y: auto; }
+        .clock { background: #000; color: #e0c389; padding: 4px 10px; font-size: 24px; border-radius: 3px; border: 1px solid #e0c389; min-width: 80px; text-align: center; font-family: monospace; }
+        .active-clock { border: 2px solid #ffeb3b; box-shadow: 0 0 10px #ffeb3b; color: #fff; }
         .board { display: grid; grid-template-columns: repeat(9, 38px); grid-template-rows: repeat(9, 42px); gap: 1.5px; background: #333; border: 4px solid #5d4037; }
-        .cell { width: 38px; height: 42px; background-color: #f3d592 !important; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: #000; border: 1px solid rgba(0,0,0,0.1); }
-        .selected { background-color: #ffeb3b !important; } /* 選択された駒の色 */
+        .cell { width: 38px; height: 42px; background-color: #f3d592 !important; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: #000; border: 1px solid rgba(0,0,0,0.1); transition: all 0.2s; }
+        .selected { background-color: #ffeb3b !important; }
         .gote-piece { transform: rotate(180deg); display: inline-block; }
-        .bottom-log { width: 600px; height: 65px; background: rgba(255,255,255,0.85); border-radius: 6px; padding: 8px 15px; overflow-y: auto; font-size: 13px; border-left: 6px solid #5d4037; box-shadow: 0 4px 10px rgba(0,0,0,0.2); line-height: 1.4; margin-bottom: 20px; color: #333; }
+        .captured-piece { cursor: pointer; display: inline-block; margin: 2px; font-size: 20px; }
+        .bottom-log { width: 600px; height: 65px; background: rgba(255,255,255,0.85); border-radius: 6px; padding: 8px 15px; overflow-y: auto; font-size: 13px; border-left: 6px solid #5d4037; color: #333; }
     </style>
 </head>
 <body>
     <div class="background-container"></div>
     <div class="main-container">
         <div class="game-area">
-            <div class="player-side"><div class="clock">10:00</div><div class="komadai">後手</div></div>
+            <div class="player-side"><div id="clock-gote" class="clock">10:00</div><div id="komadai-gote" class="komadai"></div></div>
             <div id="board" class="board"></div>
-            <div class="player-side"><div class="komadai">先手</div><div class="clock">10:00</div></div>
+            <div class="player-side"><div id="komadai-sente" class="komadai"></div><div id="clock-sente" class="clock">10:00</div></div>
         </div>
-        <div id="log" class="bottom-log"><strong>Mio's House Log</strong><p>対局準備が整いました。駒を動かしてみてください。</p></div>
+        <div id="log" class="bottom-log"><strong>Mio's House Log</strong><p>駒台と成る機能を追加しました。</p></div>
     </div>
 
     <script>
-        // --- 1. 通信の設定 ---
+        const moveSound = new Audio('komaoto.mp3');
         const pusher = new Pusher("ac6233c881f474d2d6e3", { cluster: "ap3" });
         const channel = pusher.subscribe("shogi");
 
+        let turn = 'sente';
+        let times = { sente: 600, gote: 600 };
+        let byoyomi = { sente: 30, gote: 30 };
+        let hands = { sente: [], gote: [] }; // 持ち駒
+        
+        const nariMap = { '歩':'と', '香':'杏', '桂':'圭', '銀':'全', '角':'馬', '飛':'龍' };
+
         channel.bind("move", (data) => {
-            applyMove(data.from, data.to, data.piece);
-            addLog(`相手が ${data.piece} を動かしました`);
+            applyMove(data.from, data.to, data.piece, data.isGote, false, data.promote);
         });
 
-        async function sendMove(from, to, piece) {
+        async function sendMove(from, to, piece, isGote, promote) {
             await fetch("https://vocal-khapse-d0cde1.netlify.app/.netlify/functions/move", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ from, to, piece })
+                body: JSON.stringify({ from, to, piece, isGote, promote })
             });
         }
 
-        // --- 2. 盤面のロジック ---
         const boardElement = document.getElementById('board');
         const logElement = document.getElementById('log');
+
         let initialBoard = [
-            ['香','桂','銀','金','王','金','銀','桂','香'],
-            ['','飛','','','','','','角',''],
-            ['歩','歩','歩','歩','歩','歩','歩','歩','歩'],
-            ['','','','','','','','',''],
-            ['','','','','','','','',''],
-            ['','','','','','','','',''],
-            ['歩','歩','歩','歩','歩','歩','歩','歩','歩'],
-            ['','角','','','','','','飛',''],
-            ['香','桂','銀','金','玉','金','銀','桂','香']
+            [{p:'香',g:true},{p:'桂',g:true},{p:'銀',g:true},{p:'金',g:true},{p:'王',g:true},{p:'金',g:true},{p:'銀',g:true},{p:'桂',g:true},{p:'香',g:true}],
+            [null,{p:'飛',g:true},null,null,null,null,null,{p:'角',g:true},null],
+            [{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true},{p:'歩',g:true}],
+            [null,null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null,null],
+            [null,null,null,null,null,null,null,null,null],
+            [{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false},{p:'歩',g:false}],
+            [null,{p:'角',g:false},null,null,null,null,null,{p:'飛',g:false},null],
+            [{p:'香',g:false},{p:'桂',g:false},{p:'銀',g:false},{p:'金',g:false},{p:'玉',g:false},{p:'金',g:false},{p:'銀',g:false},{p:'桂',g:false},{p:'香',g:false}]
         ];
 
-        let selected = null;
+        let selected = null; // {r, c, type: 'board' or 'hand'}
 
         function createBoard() {
             boardElement.innerHTML = '';
@@ -75,45 +83,100 @@
                 for (let c = 0; c < 9; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
-                    if (selected && selected.r === r && selected.c === c) cell.classList.add('selected');
-                    
-                    const piece = initialBoard[r][c];
-                    if (piece) {
+                    if (selected && selected.type === 'board' && selected.r === r && selected.c === c) cell.classList.add('selected');
+                    const pieceData = initialBoard[r][c];
+                    if (pieceData) {
                         const span = document.createElement('span');
-                        span.innerText = piece;
-                        if (r <= 2) span.className = 'gote-piece';
+                        span.innerText = pieceData.p;
+                        if (pieceData.g) span.className = 'gote-piece';
                         cell.appendChild(span);
                     }
                     cell.onclick = () => handleCellClick(r, c);
                     boardElement.appendChild(cell);
                 }
             }
+            updateHandsDisplay();
+            document.getElementById('clock-sente').className = turn === 'sente' ? 'clock active-clock' : 'clock';
+            document.getElementById('clock-gote').className = turn === 'gote' ? 'clock active-clock' : 'clock';
+        }
+
+        function updateHandsDisplay() {
+            ['sente', 'gote'].forEach(p => {
+                const el = document.getElementById(`komadai-${p}`);
+                el.innerHTML = p === 'sente' ? '先手<br>' : '後手<br>';
+                hands[p].forEach((piece, index) => {
+                    const span = document.createElement('span');
+                    span.innerText = piece;
+                    span.className = 'captured-piece' + (p === 'gote' ? ' gote-piece' : '');
+                    if (selected && selected.type === 'hand' && selected.player === p && selected.index === index) span.style.color = 'red';
+                    span.onclick = (e) => {
+                        e.stopPropagation();
+                        selected = { type: 'hand', player: p, index: index, piece: piece };
+                        createBoard();
+                    };
+                    el.appendChild(span);
+                });
+            });
         }
 
         function handleCellClick(r, c) {
             if (!selected) {
                 if (initialBoard[r][c]) {
-                    selected = { r, c, piece: initialBoard[r][c] };
+                    selected = { type: 'board', r, c, piece: initialBoard[r][c] };
                     createBoard();
                 }
             } else {
-                const from = `${selected.r},${selected.c}`;
-                const to = `${r},${c}`;
-                const piece = selected.piece;
-                
-                applyMove(from, to, piece);
-                sendMove(from, to, piece);
-                addLog(`あなたが ${piece} を動かしました`);
+                if (selected.type === 'board') {
+                    // 盤上の移動
+                    let promote = false;
+                    const canPromote = nariMap[selected.piece.p] && 
+                        ((!selected.piece.g && r <= 2) || (selected.piece.g && r >= 6) ||
+                         (!selected.piece.g && selected.r <= 2) || (selected.piece.g && selected.r >= 6));
+                    
+                    if (canPromote && confirm("成りますか？")) promote = true;
+                    
+                    applyMove(`${selected.r},${selected.c}`, `${r},${c}`, selected.piece.p, selected.piece.g, true, promote);
+                    sendMove(`${selected.r},${selected.c}`, `${r},${c}`, selected.piece.p, selected.piece.g, promote);
+                } else if (selected.type === 'hand') {
+                    // 駒打ち
+                    if (!initialBoard[r][c]) {
+                        applyMove('hand', `${r},${c}`, selected.piece, selected.player === 'gote', true, false);
+                        sendMove('hand', `${r},${c}`, selected.piece, selected.player === 'gote', false);
+                    }
+                }
                 selected = null;
                 createBoard();
             }
         }
 
-        function applyMove(from, to, piece) {
-            const [fr, fc] = from.split(',').map(Number);
+        function applyMove(from, to, piece, isGote, isMyMove, promote) {
             const [tr, tc] = to.split(',').map(Number);
-            initialBoard[fr][fc] = '';
-            initialBoard[tr][tc] = piece;
+            let movingPiece = piece;
+            if (promote) movingPiece = nariMap[piece] || piece;
+
+            if (from === 'hand') {
+                const player = isGote ? 'gote' : 'sente';
+                const idx = hands[player].indexOf(piece);
+                if (idx > -1) hands[player].splice(idx, 1);
+            } else {
+                const [fr, fc] = from.split(',').map(Number);
+                initialBoard[fr][fc] = null;
+                // 相手の駒を取る
+                if (initialBoard[tr][tc]) {
+                    let captured = initialBoard[tr][tc].p;
+                    // 成駒は元に戻す
+                    for (let key in nariMap) { if (nariMap[key] === captured) captured = key; }
+                    hands[isGote ? 'gote' : 'sente'].push(captured);
+                }
+            }
+
+            initialBoard[tr][tc] = { p: movingPiece, g: isGote };
+            turn = isGote ? 'sente' : 'gote';
+            if (times[isGote ? 'gote' : 'sente'] <= 0) byoyomi[isGote ? 'gote' : 'sente'] = 30;
+
+            moveSound.currentTime = 0;
+            moveSound.play().catch(e => {});
+            addLog(`${isMyMove ? 'あなた' : '相手'}が ${movingPiece} を動かしました`);
             createBoard();
         }
 
@@ -122,6 +185,26 @@
             p.innerText = msg;
             logElement.appendChild(p);
             logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        setInterval(() => {
+            if (times[turn] > 0) times[turn]--;
+            else if (byoyomi[turn] > 0) byoyomi[turn]--;
+            updateClockDisplay();
+        }, 1000);
+
+        function updateClockDisplay() {
+            ['sente', 'gote'].forEach(p => {
+                const el = document.getElementById(`clock-${p}`);
+                if (times[p] > 0) {
+                    const m = Math.floor(times[p] / 60);
+                    const s = (times[p] % 60).toString().padStart(2, '0');
+                    el.innerText = `${m}:${s}`;
+                } else {
+                    el.innerText = `秒:${byoyomi[p]}`;
+                    el.style.color = 'red';
+                }
+            });
         }
 
         createBoard();
